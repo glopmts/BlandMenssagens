@@ -12,7 +12,7 @@ export default function MensagensList() {
   const [mensagens, setMensagens] = useState<Mensagens[]>([])
   const [isLoading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
-  const { colors } = useTheme()
+  const { colors } = useTheme();
 
   useEffect(() => {
     if (user?.id) {
@@ -24,38 +24,84 @@ export default function MensagensList() {
     try {
       const { data: existingMensagens, error } = await supabase
         .from("messages")
-        .select("*")
+        .select("*, sender_id, receiver_id, created_at")
         .or(`receiver_id.eq.${user?.id},sender_id.eq.${user?.id}`)
-        .order("created_at", { ascending: false })
+        .order("created_at", { ascending: false });
 
       if (error) {
-        console.error("Error fetching messages:", error.message)
-        return
+        console.error("Error fetching messages:", error.message);
+        return;
       }
 
-      const mensagensComIdsComoString = existingMensagens?.map((mensagem) => ({
+      const userIds = [
+        ...new Set(existingMensagens?.map((msg) => msg.sender_id).concat(existingMensagens?.map((msg) => msg.receiver_id)))
+      ];
+
+      const { data: usersData, error: usersError } = await supabase
+        .from("users")
+        .select("*")
+        .in("clerk_id", userIds);
+
+      const { data: contactsData, error: contactsError } = await supabase
+        .from("contacts")
+        .select("*")
+        .in("clerk_id", userIds);
+
+      if (usersError || contactsError) {
+        console.error("Error fetching users or contacts:", usersError?.message || contactsError?.message);
+        return;
+      }
+
+      const usersMap = new Map();
+      usersData?.forEach((user) => {
+        usersMap.set(user.clerk_id, user);
+      });
+
+      const contactsMap = new Map();
+      contactsData?.forEach((contact) => {
+        contactsMap.set(contact.clerk_id, contact);
+      });
+
+      const uniqueChats = new Map();
+      existingMensagens?.forEach((msg) => {
+        const chatKey = msg.sender_id === user?.id ? msg.receiver_id : msg.sender_id;
+
+        if (!uniqueChats.has(chatKey)) {
+          const contact = contactsMap.get(chatKey);
+          const user = usersMap.get(chatKey);
+
+          uniqueChats.set(chatKey, {
+            ...msg,
+            contact_name: contact?.name || user?.name,
+            contact_image: contact?.image || user?.imageurl,
+          });
+        }
+      });
+
+      const mensagensFormatadas = Array.from(uniqueChats.values()).map((mensagem) => ({
         ...mensagem,
         id: mensagem.id.toString(),
         sender_id: mensagem.sender_id.toString(),
         receiver_id: mensagem.receiver_id.toString(),
-      }))
+      }));
 
-      setMensagens(mensagensComIdsComoString || [])
+      setMensagens(mensagensFormatadas);
     } catch (error) {
-      console.error("Error fetching messages:", error)
+      console.error("Error fetching messages:", error);
     } finally {
-      setLoading(false)
-      setRefreshing(false)
+      setLoading(false);
+      setRefreshing(false);
     }
-  }
+  };
+
 
   const onRefresh = useCallback(() => {
     setRefreshing(true)
     fetchMensagens()
-  }, [fetchMensagens]) // Added fetchMensagens to dependencies
+  }, [fetchMensagens])
 
   const renderItem = ({ item }: { item: Mensagens }) => (
-    <ListMensagens item={item} colors={colors} contacts={mensagens} />
+    <ListMensagens item={item} colors={colors} />
   )
 
   return (
@@ -84,33 +130,44 @@ export default function MensagensList() {
   )
 }
 
-function ListMensagens({ item, colors, contacts }: { item: Mensagens; colors: any; contacts: Mensagens[] }) {
-  const lastSeenText = item.created_at ? new Date(item.created_at).toLocaleString() : "Never seen"
+function ListMensagens({ item, colors }: { item: Mensagens; colors: any, }) {
+  const { user } = useUser();
+  const lastSeenText = item.created_at
+    ? new Date(item.created_at).toLocaleString()
+    : "Never seen";
+
+  const chatId = item.sender_id === user?.id ? item.receiver_id : item.sender_id;
+  const contactImage = item.contact_image;
+
+  const renderImage = contactImage ? (
+    <Image source={{ uri: contactImage }} style={styles.contactImage} />
+  ) : (
+    <View style={[styles.contactInitial, { backgroundColor: colors.primary }]}>
+      <Text style={styles.contactInitialText}>
+        {item.contact_name ? item.contact_name.charAt(0).toUpperCase() : ""}
+      </Text>
+    </View>
+  );
 
   return (
-    <TouchableOpacity style={styles.messagesItem} onPress={() => router.navigate(`/(pages)/menssagens/${item.sender_id}`)}>
-      {item.contact_phone ? (
-        <Image
-          source={{ uri: `https://api.dicebear.com/6.x/initials/png?seed=${item.contact_name}` }}
-          style={styles.contactImage}
-        />
-      ) : (
-        <View style={[styles.contactInitial, { backgroundColor: colors.primary }]}>
-          <Text style={styles.contactInitialText}>
-            {item.contact_name ? item.contact_name.charAt(0).toUpperCase() : ""}
-          </Text>
-        </View>
-      )}
+    <TouchableOpacity
+      style={styles.messagesItem}
+      onPress={() => router.navigate(`/(pages)/menssagens/${chatId}`)}
+    >
+      {renderImage}
       <View style={styles.contaInfo}>
         <View style={styles.namesDate}>
-          <Text style={[styles.contactName, { color: colors.text }]}>{item.contact_name || "Name not found"}</Text>
+          <Text style={[styles.contactName, { color: colors.text }]}>
+            {item.contact_name || "Name not found"}
+          </Text>
           <Text style={styles.lastSeen}>{lastSeenText}</Text>
         </View>
         <Text style={[styles.messageText, { color: colors.text }]}>{item.content}</Text>
       </View>
     </TouchableOpacity>
-  )
+  );
 }
+
 
 const styles = StyleSheet.create({
   container: {

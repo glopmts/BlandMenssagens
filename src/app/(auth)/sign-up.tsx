@@ -2,6 +2,7 @@ import { useTheme } from "@/hooks/useTheme"
 import { supabase } from "@/utils/supabase"
 import { useSignUp } from "@clerk/clerk-expo"
 import { useRouter } from "expo-router"
+import { parsePhoneNumber } from "libphonenumber-js"
 import { useState } from "react"
 import { ActivityIndicator, Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native"
 
@@ -31,9 +32,10 @@ export default function SignUp() {
     }
   }
 
+
   const handleVerifyCode = async () => {
     if (!isLoaded) return;
-    setLoader(true)
+    setLoader(true);
 
     try {
       const completeSignUp = await signUp.attemptPhoneNumberVerification({
@@ -49,11 +51,18 @@ export default function SignUp() {
 
       const clerkId = completeSignUp.createdUserId;
 
-      // Salvar no Supabase
+      const phoneNumberFormatted = parsePhoneNumber(phoneNumber, "BR")?.format("E.164");
+
+      if (!phoneNumberFormatted) {
+        Alert.alert("Erro", "Número de telefone inválido.");
+        return;
+      }
+
       const { error } = await supabase.from("users").insert([
         {
+          id: clerkId,
           clerk_id: clerkId,
-          phone: phoneNumber,
+          phone: phoneNumberFormatted,
         },
       ]);
 
@@ -69,9 +78,10 @@ export default function SignUp() {
       Alert.alert("Erro", err.errors[0].message);
       console.log(err);
     } finally {
-      setLoader(false)
+      setLoader(false);
     }
   };
+
 
 
   return (

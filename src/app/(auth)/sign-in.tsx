@@ -1,4 +1,5 @@
 import { useTheme } from "@/hooks/useTheme"
+import { supabase } from "@/utils/supabase"
 import { useSignIn } from "@clerk/clerk-expo"
 import { Link, useRouter } from "expo-router"
 import { useState } from "react"
@@ -14,7 +15,6 @@ export default function Page() {
 
   const handleSendOTP = async () => {
     if (!isLoaded) return
-
     try {
       await signIn.create({
         identifier: phoneNumber,
@@ -28,24 +28,55 @@ export default function Page() {
   }
 
   const handleVerifyOTP = async () => {
-    if (!isLoaded) return
+    if (!isLoaded) return;
 
     try {
       const completeSignIn = await signIn.attemptFirstFactor({
         strategy: "phone_code",
         code: verificationCode,
-      })
+      });
 
       if (completeSignIn.status === "complete") {
-        await setActive({ session: completeSignIn.createdSessionId })
-        router.push("/(tabs)")
+        await setActive({ session: completeSignIn.createdSessionId });
+
+        const { data: existingUser, error: userError } = await supabase
+          .from("users")
+          .select("*")
+          .eq("phone", phoneNumber)
+          .single();
+
+        if (userError && userError.code !== "PGRST116") {
+          Alert.alert("Erro", "Erro ao verificar usuário no banco.");
+          return;
+        }
+
+        if (!existingUser) {
+          const { error: insertError } = await supabase.from("users").insert([
+            {
+              id: existingUser.id,
+              phone: phoneNumber,
+              created_at: new Date(),
+            },
+          ]);
+
+          if (insertError) {
+            Alert.alert("Erro", "Erro ao criar usuário no banco.");
+            return;
+          }
+        } else {
+          await supabase
+            .from("users")
+            .update({ last_login: new Date() })
+            .eq("phone", phoneNumber);
+        }
+        router.push("/(tabs)");
       } else {
-        Alert.alert("Erro", "Falha na verificação. Tente novamente.")
+        Alert.alert("Erro", "Falha na verificação. Tente novamente.");
       }
     } catch (err: any) {
-      Alert.alert("Erro", err.errors[0].message)
+      Alert.alert("Erro", err.errors[0]?.message || "Erro desconhecido.");
     }
-  }
+  };
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>

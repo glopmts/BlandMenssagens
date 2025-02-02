@@ -3,6 +3,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { tokenCache } from '@/utils/cache';
 import { ClerkLoaded, ClerkProvider, useAuth } from '@clerk/clerk-expo';
 import { useFonts } from 'expo-font';
+import * as Notifications from "expo-notifications";
 import { Stack, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
@@ -19,6 +20,27 @@ if (!publishableKey) {
   );
 }
 
+Notifications.setNotificationHandler({
+  handleNotification: async (notification) => {
+    console.log('Notificação recebida no primeiro plano:', notification);
+    return {
+      shouldShowAlert: true,  // Aqui você controla a exibição de alerta
+      shouldPlaySound: true,  // Se a notificação deve emitir som
+      shouldSetBadge: false,  // Se a notificação deve alterar o ícone
+    };
+  },
+});
+
+async function requestNotificationPermissions() {
+  const { status } = await Notifications.requestPermissionsAsync();
+  if (status !== 'granted') {
+    alert('Você precisa permitir notificações para receber alertas!');
+  } else {
+    console.log('Permissão concedida para notificações');
+  }
+}
+
+
 function RootLayoutNav() {
   const { colors } = useTheme();
   const { isLoaded, isSignedIn } = useAuth();
@@ -27,8 +49,30 @@ function RootLayoutNav() {
   useEffect(() => {
     if (isLoaded && !isSignedIn) {
       router.replace('/(auth)/sign-in');
+      requestNotificationPermissions();
     }
   }, [isLoaded, isSignedIn]);
+
+  useEffect(() => {
+    const subscription = Notifications.addNotificationReceivedListener(notification => {
+      console.log('Notificação recebida:', notification);
+    });
+
+    const responseSubscription = Notifications.addNotificationResponseReceivedListener(response => {
+      console.log('Resposta da notificação:', response);
+
+      const { data } = response.notification.request.content;
+      if (data && data.chatId) {
+        router.push(`/(pages)/menssagens/${data.chatId}`);
+      }
+    });
+
+    return () => {
+      subscription.remove();
+      responseSubscription.remove();
+    };
+  }, [router]);
+
 
   return (
     <>

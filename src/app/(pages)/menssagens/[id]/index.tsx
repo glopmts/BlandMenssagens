@@ -1,22 +1,23 @@
 import { useMessages } from "@/hooks/useMessages"
 import { useTheme } from "@/hooks/useTheme"
-import { Mensagens } from "@/types/interfaces"
+import type { Mensagens } from "@/types/interfaces"
 import { useClerk } from "@clerk/clerk-expo"
 import { useLocalSearchParams } from "expo-router"
 import { useState } from "react"
-import { Button, FlatList, Platform, StyleSheet, Text, TextInput, View } from "react-native"
+import { ActivityIndicator, Button, FlatList, Platform, StyleSheet, Text, TextInput, View } from "react-native"
 
 export default function MensagensPageRender() {
   const { user } = useClerk()
-  const { id } = useLocalSearchParams<{ id: string }>()
+  const { id } = useLocalSearchParams<{
+    id: string
+  }>()
   const { colors } = useTheme()
   const [newMessage, setNewMessage] = useState("")
-
-  const { messages, loading, sendMessage } = useMessages(id, user?.id || '')
+  const { messages, loading, sendMessage } = useMessages(user?.id || "", id)
 
   const handleSend = async () => {
     if (!newMessage.trim()) return
-    await sendMessage(newMessage, id)
+    await sendMessage(newMessage)
     setNewMessage("")
   }
 
@@ -25,25 +26,20 @@ export default function MensagensPageRender() {
       style={[
         styles.messageContainer,
         item.sender_id === user?.id ? styles.sentMessage : styles.receivedMessage,
-        { backgroundColor: item.sender_id === user?.id ? colors.primary : colors.card }
+        { backgroundColor: item.sender_id === user?.id ? colors.primary : colors.card },
       ]}
     >
-      <Text style={[
-        styles.messageText,
-        { color: item.sender_id === user?.id ? colors.background : colors.text }
-      ]}>
+      <Text style={[styles.messageText, { color: item.sender_id === user?.id ? colors.background : colors.text }]}>
         {item.content}
       </Text>
-      <Text style={styles.timeText}>
-        {new Date(item.created_at).toLocaleTimeString()}
-      </Text>
+      <Text style={styles.timeText}>{new Date(item.created_at).toLocaleTimeString()}</Text>
     </View>
   )
 
   if (loading) {
     return (
       <View style={[styles.container, { backgroundColor: colors.background }]}>
-        <Text>Loading messages...</Text>
+        <ActivityIndicator size={28} color={colors.text} />
       </View>
     )
   }
@@ -53,7 +49,8 @@ export default function MensagensPageRender() {
       <FlatList
         data={messages}
         renderItem={renderMessage}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item, index) => `${item.id}-${item.sender_id}-${item.created_at}-${index}`}
+
         contentContainerStyle={styles.messagesList}
       />
       <View style={styles.inputContainer}>
@@ -64,9 +61,7 @@ export default function MensagensPageRender() {
           placeholder="Type a message..."
           placeholderTextColor={colors.text}
         />
-        <Button title="Send" onPress={handleSend}>
-
-        </Button>
+        <Button title="Send" onPress={handleSend} />
       </View>
     </View>
   )
@@ -84,16 +79,16 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
   },
   messageContainer: {
-    maxWidth: '80%',
+    maxWidth: "80%",
     padding: 12,
     borderRadius: 16,
     marginVertical: 4,
   },
   sentMessage: {
-    alignSelf: 'flex-end',
+    alignSelf: "flex-end",
   },
   receivedMessage: {
-    alignSelf: 'flex-start',
+    alignSelf: "flex-start",
   },
   messageText: {
     fontSize: 16,
@@ -104,7 +99,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   inputContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     paddingVertical: 8,
     gap: 8,
   },
@@ -113,7 +108,5 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 20,
   },
-  sendButton: {
-    paddingHorizontal: 20,
-  },
 })
+

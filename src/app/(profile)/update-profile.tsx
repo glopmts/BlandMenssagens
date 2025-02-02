@@ -66,7 +66,6 @@ export default function UpdateProfile() {
         imageUrl = await uploadImage(image);
       }
 
-      console.log('Updating user data...');
       const { error: updateError } = await supabase.from('users').update({
         clerk_id: user?.id,
         imageurl: imageUrl,
@@ -74,13 +73,22 @@ export default function UpdateProfile() {
         email: email,
       }).eq('clerk_id', user?.id);
 
+      const { error: updateErrorContac } = await supabase.from('contacts').update({
+        clerk_id: user?.id,
+        image: imageUrl,
+      }).eq('clerk_id', user?.id);
+
+      if (updateErrorContac) {
+        throw new Error(`Update error: ${updateErrorContac.message}`);
+      }
+
       if (updateError) {
         throw new Error(`Update error: ${updateError.message}`);
       }
       console.log('User data updated successfully');
 
       ToastAndroid.show('Perfil atualizado com sucesso!', ToastAndroid.SHORT);
-      router.push('/(tabs)');
+      router.navigate('/(tabs)');
     } catch (err) {
       setError('Falha ao atualizar o perfil!');
       console.error('Error updating profile:', err);
