@@ -7,11 +7,22 @@ export interface ThemeColors {
   buttonText: string;
   borderColor: string;
   PlaceholderTextColor: string;
-  error: string;
   backgroundColorHeader: string;
+  backgroundColorHeaderLinks: string;
+  backgroundHeader: string;
   phoneContacts: string;
   backgroundColorContacts: string;
+  backgroundButton: string;
+
+
+  error: string;
   card: string;
+  red: string;
+  blue: string;
+  green: string;
+  yellow: string;
+  orange: string;
+  gray: string;
 }
 
 export interface ThemeContextType {

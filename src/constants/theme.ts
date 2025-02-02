@@ -8,10 +8,23 @@ export const lightColors: ThemeColors = {
   borderColor: "#000000",
   PlaceholderTextColor: "#C7C7CD",
   error: "#FFFFFF",
-  backgroundColorHeader: '#fff',
+  backgroundColorHeader: '#ccc',
   phoneContacts: '#71717a',
   backgroundColorContacts: '#f5f5f5',
-  card: '#f5f5f5'
+  backgroundColorHeaderLinks: '#FFFFFF',
+  backgroundHeader: '#71717a',
+  backgroundButton: '#C7C7CD',
+
+
+
+  card: '#f5f5f5',
+  green: '#33cc33',
+  red: '#ff0000',
+  blue: '#0000ff',
+  yellow: '#ffff00',
+  orange: '#ffa500',
+  gray: '#9BA1A6',
+
 }
 
 export const darkColors: ThemeColors = {
@@ -22,8 +35,18 @@ export const darkColors: ThemeColors = {
   borderColor: "#3f3f46",
   PlaceholderTextColor: "#A9A9A9",
   error: "#FF0000",
-  backgroundColorHeader: '#27272a',
+  backgroundColorHeader: '#212121',
   phoneContacts: '#71717a',
   backgroundColorContacts: '#212121',
-  card: '#212121'
+  backgroundColorHeaderLinks: '#2a2a2a',
+  backgroundHeader: '#212121',
+  backgroundButton: '#1E90FF',
+
+  card: '#212121',
+  green: '#33cc33',
+  red: '#ff0000',
+  blue: '#0000ff',
+  yellow: '#ffff00',
+  orange: '#ffa500',
+  gray: '#9BA1A6',
 }

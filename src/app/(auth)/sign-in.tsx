@@ -69,7 +69,7 @@ export default function Page() {
             .update({ last_login: new Date() })
             .eq("phone", phoneNumber);
         }
-        router.push("/(tabs)");
+        router.push("/(drawer)/(tabs)");
       } else {
         Alert.alert("Erro", "Falha na verificação. Tente novamente.");
       }

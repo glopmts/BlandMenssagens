@@ -10,7 +10,7 @@ import { ActivityIndicator, FlatList, StyleSheet, Text, TouchableOpacity, View }
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    padding: 10,
   },
   title: {
     fontSize: 24,
@@ -37,6 +37,9 @@ const styles = StyleSheet.create({
     height: 50,
     borderRadius: 25,
     marginRight: 10,
+    alignContent: "center",
+    justifyContent: "center",
+    alignItems: "center",
   },
   contactName: {
     fontSize: 18,
@@ -65,7 +68,6 @@ export default function ContactsScreen() {
 
   const loadContactsFromSupabase = async () => {
     if (!user) return
-
     try {
       setIsLoading(true)
       setError(null)
@@ -76,16 +78,16 @@ export default function ContactsScreen() {
         .eq("user_id", user.id)
 
       if (contactsError) throw contactsError
-
       setContacts(contactsData || [])
 
       if (contactsData && contactsData.length > 0) {
-        const contactIds = contactsData.map((contact) => contact.contact_id)
+        const contactIds = contactsData
+          .map((contact) => contact.contact_id)
+          .filter((id) => id)
         const { data: usersData, error: usersError } = await supabase
           .from("users")
           .select("*")
           .in("clerk_id", contactIds)
-
         if (usersError) throw usersError
 
         setUsers(usersData || [])
@@ -109,16 +111,17 @@ export default function ContactsScreen() {
       ? new Date(userContact.lastOnline).toLocaleString()
       : "Nunca visto"
 
+
     return (
       <TouchableOpacity
         style={[styles.contactItem, { backgroundColor: colors.cardColor }]}
-        onPress={() => router.navigate(`/(pages)/menssagens/${item.id}`)}
+        onPress={() => router.navigate(`/(pages)/menssagens/${item.contact_id}`)}
       >
-        {userContact?.image ? (
-          <Image style={styles.contactImage} source={{ uri: userContact.image }} />
+        {userContact?.imageurl ? (
+          <Image style={styles.contactImage} source={{ uri: userContact?.imageurl }} />
         ) : (
           <View style={[styles.contactImage, { backgroundColor: colors.primary }]}>
-            <Text style={{ color: "white", fontWeight: "bold" }}>{userContact?.name?.charAt(0)}</Text>
+            <Text style={{ color: "white", fontWeight: "700", fontSize: 20 }}>{userContact?.name?.charAt(0)}</Text>
           </View>
         )}
         <View>
