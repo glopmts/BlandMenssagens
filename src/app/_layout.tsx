@@ -44,10 +44,13 @@ async function requestNotificationPermissions() {
 }
 
 
+
+
 function RootLayoutNav() {
   const { colors } = useTheme();
   const { isLoaded, isSignedIn } = useAuth();
   const router = useRouter();
+
 
   useEffect(() => {
     if (isLoaded && !isSignedIn) {
@@ -55,6 +58,7 @@ function RootLayoutNav() {
       requestNotificationPermissions();
     }
   }, [isLoaded, isSignedIn]);
+
 
   useEffect(() => {
     const subscription = Notifications.addNotificationReceivedListener(notification => {

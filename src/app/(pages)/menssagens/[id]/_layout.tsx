@@ -100,7 +100,7 @@ export default function MensagensLayout() {
                 )}
                 <View>
                   <Text style={[styles.headerTitle, { color: colors.text }]}>{name || "Mensagens"}</Text>
-                  <Text style={[styles.onlineStatus, { color: isOnline ? colors.green : colors.gray }]}>
+                  <Text style={[styles.onlineStatus, { color: isOnline ? colors.primary : colors.gray }]}>
                     {isOnline ? "Online" : formatLastOnline(lastOnline)}
                   </Text>
                 </View>

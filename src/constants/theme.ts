@@ -14,6 +14,8 @@ export const lightColors: ThemeColors = {
   backgroundColorHeaderLinks: '#FFFFFF',
   backgroundHeader: '#71717a',
   backgroundButton: '#C7C7CD',
+  backgroundsendMenssage: '',
+  backgroundreceiveMenssage: '',
 
 
 
@@ -41,6 +43,8 @@ export const darkColors: ThemeColors = {
   backgroundColorHeaderLinks: '#2a2a2a',
   backgroundHeader: '#212121',
   backgroundButton: '#1E90FF',
+  backgroundsendMenssage: '#1E90FF',
+  backgroundreceiveMenssage: '',
 
   card: '#212121',
   green: '#33cc33',

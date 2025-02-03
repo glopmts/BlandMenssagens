@@ -14,6 +14,9 @@ export interface ThemeColors {
   backgroundColorContacts: string;
   backgroundButton: string;
 
+  backgroundsendMenssage: string;
+  backgroundreceiveMenssage: string;
+
 
   error: string;
   card: string;
