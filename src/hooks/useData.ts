@@ -7,11 +7,14 @@ interface UserProps {
 }
 
 interface UserState {
+  id?: string;
   name: string;
   imageurl: string | null;
   isOnline: boolean;
   isLoader: boolean;
   error: string | null;
+  phone?: string | null;
+  email?: string | null;
 }
 
 export default function UserData({ userId }: UserProps) {
@@ -22,6 +25,7 @@ export default function UserData({ userId }: UserProps) {
     isLoader: true,
     error: null,
   });
+  const [userData, setUser] = useState<UserState | null>(null);
 
   const fetchData = useCallback(async () => {
     if (!userId) return;
@@ -39,6 +43,7 @@ export default function UserData({ userId }: UserProps) {
         isLoader: false,
         error: null,
       });
+      setUser(userData);
     } catch (error) {
       setState((prevState) => ({
         ...prevState,
@@ -59,5 +64,6 @@ export default function UserData({ userId }: UserProps) {
     isOnline: state.isOnline,
     isLoader: state.isLoader,
     error: state.error,
+    userData: userData
   };
 }

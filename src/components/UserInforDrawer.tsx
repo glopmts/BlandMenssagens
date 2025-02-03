@@ -74,6 +74,7 @@ const styles = StyleSheet.create(({
     borderRadius: 25,
     overflow: 'hidden',
     borderColor: '#fff',
+    justifyContent: "center"
   },
   userInfoOptions: {
     width: '100%',

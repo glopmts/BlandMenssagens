@@ -1,22 +1,3 @@
-interface ImagePickerResult {
-  canceled: boolean;
-  assets: {
-    uri: string;
-  }[];
-}
-
-interface SupabaseStorageResponse {
-  data: {
-    path: string;
-  } | null;
-  error: Error | null;
-}
-
-interface SupabasePublicUrlResponse {
-  data: {
-    publicUrl: string;
-  } | null;
-}
 
 export interface Contact {
   id: string;
@@ -40,6 +21,8 @@ export interface User {
 }
 
 export interface Mensagens {
+  sender?: any;
+  receiver?: any;
   id: string
   sender_id: string
   receiver_id: string

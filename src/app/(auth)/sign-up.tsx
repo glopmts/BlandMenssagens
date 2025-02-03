@@ -75,7 +75,7 @@ export default function SignUp() {
       }
 
       Alert.alert("Sucesso", "Conta criada com sucesso!");
-      router.push("/(profile)/update-profile");
+      router.push("/(profile)/newsUserUpadete");
     } catch (err: any) {
       Alert.alert("Erro", err.errors[0].message);
       console.log(err);

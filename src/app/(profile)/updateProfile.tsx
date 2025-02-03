@@ -6,7 +6,7 @@ import * as ImageManipulator from 'expo-image-manipulator';
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Alert, Image, Platform, StyleSheet, Text, TextInput, ToastAndroid, TouchableOpacity, View } from "react-native";
 
 export default function UpdateProfile() {
@@ -17,7 +17,30 @@ export default function UpdateProfile() {
   const [isLoaded, setIsLoaded] = useState(false);
   const [error, setError] = useState("");
   const { user } = useClerk();
+  const userId = user?.id;
   const router = useRouter();
+
+  const fetchData = useCallback(async () => {
+    if (!userId) return;
+
+    try {
+      const response = await fetch(`${url}/api/user/${userId}`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch user data");
+      }
+      const userData = await response.json();
+      setName(userData.name);
+      setImage(userData.imageurl);
+      setEmail(userData.email);
+
+    } catch (error) {
+      Alert.alert("Error", "Failed to fetch user data");
+    }
+  }, [userId]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -52,13 +75,7 @@ export default function UpdateProfile() {
   };
 
   const handleSave = async () => {
-    if (!name || !email) {
-      setError("Todos os campos devem ser preenchidos!");
-      return;
-    }
-
     setIsLoaded(true);
-
     try {
       let imageUrl: string | null = null;
 
@@ -66,24 +83,24 @@ export default function UpdateProfile() {
         imageUrl = await uploadImage(image);
       }
 
-      const res = await fetch(`${url}/user/update`, {
+      const res = await fetch(`${url}/api/user/update`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+          userId: user?.id,
           name,
           email,
           imageurl: imageUrl,
         }),
       })
-
       if (!res.ok) {
         Alert.alert("Error updating profile!")
         throw new Error('Falha ao atualizar o usuário!');
       }
       ToastAndroid.show('Perfil atualizado com sucesso!', ToastAndroid.SHORT);
-      router.navigate('/(drawer)/(tabs)');
+      router.push('/(profile)/profile');
     } catch (err) {
       setError('Falha ao atualizar o perfil!');
       console.error('Error updating profile:', err);
@@ -95,7 +112,7 @@ export default function UpdateProfile() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <Text style={[styles.title, { color: colors.text }]}>Atualize seu perfil antes de seguir!</Text>
+      <Text style={[styles.title, { color: colors.text }]}>Atualize seu perfil!</Text>
       {error && <Text style={[styles.error, { color: colors.error }]}>{error}</Text>}
       <TouchableOpacity style={styles.imageContainer} onPress={pickImage}>
         {image ? (

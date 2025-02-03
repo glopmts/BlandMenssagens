@@ -10,27 +10,30 @@ import { StyleSheet, Text, TouchableOpacity, View } from "react-native"
 export default function MensagensLayout() {
   const { colors } = useTheme()
   const { id } = useLocalSearchParams<{ id: string }>()
+  const userId = id;
   const [name, setName] = useState<string>("")
+  const [phone, setPhone] = useState<string>("")
   const [image, setImage] = useState<string | null>(null)
   const [lastOnline, setLastOnline] = useState<string>("")
   const [isOnline, setIsOnline] = useState(false)
 
   useEffect(() => {
     const fetchData = async () => {
-      if (id) {
-        const res = await fetch(`${url}/api/user/${id}`)
+      if (userId) {
+        const res = await fetch(`${url}/api/user/${userId}`)
         if (!res.ok) {
           throw new Error(`Error fetching user data: ${res.status}`)
         }
         const userData = await res.json()
         setName(userData.name)
+        setPhone(userData.phone)
         setImage(userData.imageurl)
         setIsOnline(userData.isOnline)
         setLastOnline(userData.lastOnline)
       }
     }
     fetchData()
-  }, [id])
+  }, [userId])
 
   const formatLastOnline = (lastOnlineDate?: string) => {
     if (!lastOnlineDate) return "Data indisponível"
@@ -88,12 +91,12 @@ export default function MensagensLayout() {
                     }}
                   >
                     <Text style={[styles.headerTitle, { color: colors.text }]}>
-                      {name?.charAt(0).toUpperCase() || ""}
+                      {name?.charAt(0).toUpperCase() || "MG"}
                     </Text>
                   </View>
                 )}
                 <View>
-                  <Text style={[styles.headerTitle, { color: colors.text }]}>{name || "Mensagens"}</Text>
+                  <Text style={[styles.headerTitle, { color: colors.text }]}>{name || phone}</Text>
                   <Text style={[styles.onlineStatus, { color: isOnline ? colors.primary : colors.gray }]}>
                     {isOnline ? "Online" : formatLastOnline(lastOnline)}
                   </Text>

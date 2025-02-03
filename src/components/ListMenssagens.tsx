@@ -1,29 +1,58 @@
-import { useTheme } from "@/hooks/useTheme"
-import type { Mensagens } from "@/types/interfaces"
-import { url } from "@/utils/url-api"
-import { useUser } from "@clerk/clerk-expo"
-import { Image } from "expo-image"
-import { router } from "expo-router"
-import { useCallback, useEffect, useState } from "react"
-import { ActivityIndicator, Alert, FlatList, RefreshControl, StyleSheet, Text, TouchableOpacity, View } from "react-native"
+import { useTheme } from "@/hooks/useTheme";
+import { Mensagens } from "@/types/interfaces";
+import { url } from "@/utils/url-api";
+import { useUser } from "@clerk/clerk-expo";
+import { Image } from "expo-image";
+import { router } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
+import { ActivityIndicator, Alert, FlatList, RefreshControl, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+
+import io from "socket.io-client";
+const socket = io("http://192.168.18.8:5001");
+
 
 export default function MensagensList() {
-  const { user } = useUser()
-  const [mensagens, setMensagens] = useState<Mensagens[]>([])
-  const [isLoading, setLoading] = useState(true)
-  const [refreshing, setRefreshing] = useState(false)
+  const { user } = useUser();
+  const [mensagens, setMensagens] = useState<Mensagens[]>([]);
+  const [isLoading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const { colors } = useTheme();
 
   useEffect(() => {
     if (user?.id) {
-      fetchMensagens(user.id)
+      fetchMensagens(user.id);
+
+      socket.on('send_message', (newMessage: Mensagens) => {
+        setMensagens((prevMensagens) => {
+          const chatId = newMessage.sender_id === user.id ? newMessage.receiver_id : newMessage.sender_id;
+
+          const existingMessageIndex = prevMensagens.findIndex(
+            (msg) => (msg.sender_id === chatId || msg.receiver_id === chatId)
+          );
+
+          if (existingMessageIndex !== -1) {
+            const updatedMessages = [...prevMensagens];
+            updatedMessages[existingMessageIndex] = newMessage;
+            return updatedMessages;
+          } else {
+            return [newMessage, ...prevMensagens];
+          }
+        });
+      });
     }
-  }, [user?.id])
+
+    return () => {
+      if (socket) {
+        socket.off('send_message');
+        socket.disconnect();
+      }
+    };
+  }, [user?.id]);
 
   const fetchMensagens = async (userId: string) => {
-    setLoading(true)
+    setLoading(true);
     try {
-      const response = await fetch(`${url}/api/user/menssagens/${userId}`);
+      const response = await fetch(`${url}/api/user/recipeMenssagens/${userId}`);
       const data = await response.json();
 
       if (!response.ok) {
@@ -37,24 +66,41 @@ export default function MensagensList() {
         receiver_id: mensagem.receiver_id.toString(),
       }));
 
+      const groupedMessages = groupMessagesByContact(mensagensFormatadas);
+      setMensagens(groupedMessages);
       return mensagensFormatadas;
     } catch (error: any) {
       Alert.alert("Erro", error.message);
       return [];
     } finally {
-      setLoading(false)
-      setRefreshing(false)
+      setLoading(false);
+      setRefreshing(false);
     }
   };
 
   const onRefresh = useCallback(() => {
-    setRefreshing(true)
-    fetchMensagens(user?.id!)
-  }, [fetchMensagens])
+    setRefreshing(true);
+    fetchMensagens(user?.id!);
+  }, [fetchMensagens]);
+
 
   const renderItem = ({ item }: { item: Mensagens }) => (
     <ListMensagens item={item} colors={colors} />
-  )
+  );
+
+  const groupMessagesByContact = (messages: Mensagens[]) => {
+    const groupedMessages: { [key: string]: Mensagens } = {};
+
+    messages.forEach((message) => {
+      const chatId = message.sender_id === user?.id ? message.receiver_id : message.sender_id;
+
+      if (!groupedMessages[chatId] || new Date(message.created_at) > new Date(groupedMessages[chatId].created_at)) {
+        groupedMessages[chatId] = message;
+      }
+    });
+
+    return Object.values(groupedMessages);
+  };
 
   return (
     <View style={[styles.container, { backgroundColor: colors.backgroundColorContacts }]}>
@@ -65,6 +111,7 @@ export default function MensagensList() {
       ) : (
         <FlatList
           data={mensagens}
+          extraData={mensagens}
           keyExtractor={(item) => item.id}
           renderItem={renderItem}
           ListEmptyComponent={<Text style={[styles.emptyText, { color: colors.text }]}>No messages yet!</Text>}
@@ -79,24 +126,26 @@ export default function MensagensList() {
         />
       )}
     </View>
-  )
+  );
 }
 
-function ListMensagens({ item, colors }: { item: Mensagens; colors: any, }) {
+function ListMensagens({ item, colors }: { item: Mensagens; colors: any }) {
   const { user } = useUser();
   const lastSeenText = item.created_at
     ? new Date(item.created_at).toLocaleString()
     : "Never seen";
 
-  const chatId = item.sender_id === user?.id ? item.receiver_id : item.sender_id;
-  const contactImage = item.contact_image;
+  const isSender = item.sender_id === user?.id;
+  const contact = isSender ? item.receiver : item.sender;
+  const contactImage = contact.imageurl;
+  const contactName = contact.name;
 
   const renderImage = contactImage ? (
     <Image source={{ uri: contactImage }} style={styles.contactImage} />
   ) : (
     <View style={[styles.contactInitial, { backgroundColor: colors.primary }]}>
       <Text style={styles.contactInitialText}>
-        {item.contact_name ? item.contact_name.charAt(0).toUpperCase() : ""}
+        {contactName ? contactName.charAt(0).toUpperCase() : ""}
       </Text>
     </View>
   );
@@ -104,13 +153,13 @@ function ListMensagens({ item, colors }: { item: Mensagens; colors: any, }) {
   return (
     <TouchableOpacity
       style={styles.messagesItem}
-      onPress={() => router.navigate(`/(pages)/menssagens/${chatId}`)}
+      onPress={() => router.navigate(`/(pages)/menssagens/${contact.clerk_id}`)}
     >
       {renderImage}
       <View style={styles.contaInfo}>
         <View style={styles.namesDate}>
           <Text style={[styles.contactName, { color: colors.text }]}>
-            {item.contact_name || "Name not found"}
+            {contactName || "Name not found"}
           </Text>
           <Text style={styles.lastSeen}>{lastSeenText}</Text>
         </View>
@@ -119,7 +168,6 @@ function ListMensagens({ item, colors }: { item: Mensagens; colors: any, }) {
     </TouchableOpacity>
   );
 }
-
 
 const styles = StyleSheet.create({
   container: {
@@ -184,7 +232,5 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     marginBottom: 5,
-
-  }
-})
-
+  },
+});

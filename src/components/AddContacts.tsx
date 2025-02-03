@@ -12,7 +12,6 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
-import { normalizePhoneNumber } from "./normNumber";
 
 export default function AddContacts() {
   const { user } = useUser();
@@ -29,21 +28,17 @@ export default function AddContacts() {
 
   const handleAddContact = async () => {
     if (!isFormValid) return;
-
     setIsLoading(true);
-
     try {
-      const normalizedPhone = normalizePhoneNumber(phoneNumber);
-
-      const res = await fetch(`${url}/user/addContacts`, {
+      const res = await fetch(`${url}/api/user/addContacts`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          phone: normalizedPhone,
+          phone: phoneNumber,
           name,
-          user_id: user?.id,
+          userId: user?.id,
         }),
       })
 

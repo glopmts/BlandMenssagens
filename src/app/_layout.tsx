@@ -12,6 +12,7 @@ import React, { useEffect } from 'react';
 import 'react-native-gesture-handler';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import 'react-native-reanimated';
+import CreateUserBackend from './actions/userAuth';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -52,18 +53,17 @@ function RootLayoutNav() {
     if (isLoaded && !isSignedIn) {
       router.replace('/(auth)/sign-in');
       requestNotificationPermissions();
+      CreateUserBackend();
     }
   }, [isLoaded, isSignedIn]);
 
 
   useEffect(() => {
     const subscription = Notifications.addNotificationReceivedListener(notification => {
-      console.log('Notificação recebida:', notification);
+
     });
 
     const responseSubscription = Notifications.addNotificationResponseReceivedListener(response => {
-      console.log('Resposta da notificação:', response);
-
       const { data } = response.notification.request.content;
       if (data && data.chatId) {
         router.push(`/(pages)/menssagens/${data.chatId}`);

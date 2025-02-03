@@ -3,29 +3,24 @@ import { useTheme } from "@/hooks/useTheme";
 import { useUser } from "@clerk/clerk-expo";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Image } from "expo-image";
-import { Stack } from "expo-router";
+import { router, Stack } from "expo-router";
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export default function LayoutProfile() {
   const { user } = useUser();
-  const userId = user?.id;
+  const userId = user?.id || "";
   const { colors } = useTheme();
-  if (!userId) {
-    return (
-      <ActivityIndicator size={18} color={colors.text} />
-    );
-  }
   const { name, image, isOnline, isLoader } = UserData({ userId })
 
   if (isLoader) {
     return (
-      <ActivityIndicator size={18} color={colors.text} />
+      <View style={styles.container}>
+        <ActivityIndicator size={18} color={colors.text} />
+      </View>
     );
   }
-
   return (
     <>
-
       <Stack
         screenOptions={{
           headerStyle: {
@@ -66,7 +61,7 @@ export default function LayoutProfile() {
                 )}
                 <View>
                   <Text style={[styles.headerTitle, { color: colors.text }]}>
-                    {name}
+                    {name || 'No name'}
                   </Text>
                   <Text style={[styles.headerOnline, { color: isOnline ? colors.primary : colors.gray }]}>
                     {isOnline ? "Online" : "Offline"}
@@ -76,7 +71,7 @@ export default function LayoutProfile() {
             ),
             headerRight: () => (
               <View>
-                <TouchableOpacity>
+                <TouchableOpacity onPress={() => router.replace('/updateProfile')}>
                   <MaterialCommunityIcons name="pencil" size={20} color={colors.text} />
                 </TouchableOpacity>
               </View>
@@ -89,6 +84,11 @@ export default function LayoutProfile() {
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
   headerIcons: {
     flex: 1,
     gap: 10,

@@ -3,7 +3,7 @@ import { url } from "@/utils/url-api";
 import { useEffect, useState } from "react";
 import io from "socket.io-client";
 
-const socket = io(url || "https://backend-app-send.vercel.app");
+const socket = io("http://192.168.18.8:5001");
 
 export function useMessages(chatId: string, userId: string) {
   const [messages, setMessages] = useState<Mensagens[]>([]);
@@ -27,7 +27,7 @@ export function useMessages(chatId: string, userId: string) {
   useEffect(() => {
     async function fetchMessages() {
       try {
-        const res = await fetch(`${url}/api/menssagens/${userId}`);
+        const res = await fetch(`${url}/api/user/menssagens/${userId}`);
         if (!res.ok) throw new Error("Erro ao buscar mensagens");
         const data = await res.json();
         setMessages(data);

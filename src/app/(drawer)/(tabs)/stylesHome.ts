@@ -1,4 +1,3 @@
-
 import { Platform, StyleSheet } from "react-native"
 
 export const stylesHome = StyleSheet.create({
