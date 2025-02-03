@@ -1,43 +1,57 @@
 import { User } from "@/types/interfaces";
 import { Image } from "expo-image";
-import { Platform, StyleSheet, Text, View } from "react-native";
+import { router } from "expo-router";
+import { ActivityIndicator, Platform, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { ThemeToggle } from "./ThemeToggle";
 
 interface UserProps {
   user?: User;
   colors: any;
   userData: User | null;
+  isLoader?: boolean;
 }
 
-export default function UserInforDrawer({ colors, userData }: UserProps) {
+export default function UserInforDrawer({ colors, userData, isLoader }: UserProps) {
   return (
     <View style={[{ backgroundColor: colors.backgroundColorHeader }]}>
-      <View style={styles.userInfo}>
-        <View style={[styles.userInfoOptions]}>
-          <View style={styles.userInfoAvatar}>
-            {userData?.imageurl ? (
-              <Image source={{ uri: userData?.imageurl }} style={styles.userInfoAvatarImage} />
-            ) : (
-              <View style={[styles.userInfoAvatar, { backgroundColor: colors.primary }]}>
-                <Text style={styles.userInfoAvatarText}>
-                  {userData?.name?.charAt(0).toUpperCase()}
-                </Text>
+      {isLoader ? (
+        <View style={{ paddingTop: 30 }}>
+          <ActivityIndicator size={30} color={colors.text} />
+        </View>
+      ) : (
+        <View style={styles.userInfo}>
+          <View style={[styles.userInfoOptions]}>
+            <TouchableOpacity onPress={() => router.navigate("/(profile)/profile")} style={[styles.avatarInfor]}>
+              <View style={styles.userInfoAvatar}>
+                {userData?.imageurl ? (
+                  <Image source={{ uri: userData?.imageurl }} style={styles.userInfoAvatarImage} />
+                ) : (
+                  <View style={[styles.userInfoAvatar, { backgroundColor: colors.primary }]}>
+                    <Text style={styles.userInfoAvatarText}>
+                      {userData?.name ? (
+                        userData?.name?.charAt(0).toUpperCase()
+                      ) : (
+                        "Unknown"
+                      )}
+                    </Text>
+                  </View>
+                )}
               </View>
-            )}
+            </TouchableOpacity>
+            <View>
+              <ThemeToggle />
+            </View>
           </View>
-          <View>
-            <ThemeToggle />
+          <View style={styles.inforDescription}>
+            <Text style={[styles.userInfoName, { color: colors.text }]}>
+              {userData?.name ?? 'No name'}
+            </Text>
+            <Text style={[styles.userInfoPhone, { color: colors.text }]}>
+              {userData?.phone ?? 'No number'}
+            </Text>
           </View>
         </View>
-        <View style={styles.inforDescription}>
-          <Text style={[styles.userInfoName, { color: colors.text }]}>
-            {userData?.name}
-          </Text>
-          <Text style={[styles.userInfoPhone, { color: colors.text }]}>
-            {userData?.phone}
-          </Text>
-        </View>
-      </View>
+      )}
     </View>
   )
 }
@@ -50,6 +64,9 @@ const styles = StyleSheet.create(({
     marginBottom: 20,
     padding: 10,
     paddingTop: Platform.OS === "ios" ? 60 : 60,
+  },
+  avatarInfor: {
+    marginLeft: 8
   },
   userInfoAvatar: {
     width: 50,
@@ -82,6 +99,7 @@ const styles = StyleSheet.create(({
   },
   userInfoPhone: {
     fontSize: 16,
+    marginLeft: 10,
   },
   inforDescription: {
     display: 'flex',

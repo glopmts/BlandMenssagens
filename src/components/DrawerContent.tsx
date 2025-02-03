@@ -1,36 +1,31 @@
 import { useTheme } from "@/hooks/useTheme";
 import { User } from "@/types/interfaces";
-import { supabase } from "@/utils/supabase";
+import { url } from "@/utils/url-api";
 import { useAuth, useUser } from "@clerk/clerk-expo";
 import { MaterialIcons } from "@expo/vector-icons";
 import { DrawerContentComponentProps } from "@react-navigation/drawer";
 import { useEffect, useState } from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import LinksOptionsDrawer from "./LinksOptionsDrawer";
 import UserInforDrawer from "./UserInforDrawer";
 
 export function DrawerContent(drawerProps: DrawerContentComponentProps) {
   const { colors } = useTheme();
   const { user } = useUser();
+  const userId = user?.id;
   const [userData, setDataUser] = useState<User | null>(null);
   const [loader, setLoader] = useState(true);
   const { signOut } = useAuth();
 
   useEffect(() => {
     const fetchData = async () => {
-      if (user) {
-        const { data: userData, error: userError } = await supabase
-          .from('users')
-          .select('*')
-          .eq('clerk_id', user.id)
-          .single()
-        if (userError) {
-          console.error('Error fetching user:', userError.message)
-          return
-        }
+      try {
+        const res = await fetch(`${url}/api/user/${userId}`)
+        const userData: User = await res.json()
         setDataUser(userData)
-        setLoader(false)
-      } else {
+      } catch (error) {
+        Alert.alert("Error", "Failed to fetch user data");
+      } finally {
         setLoader(false)
       }
     }
@@ -46,7 +41,7 @@ export function DrawerContent(drawerProps: DrawerContentComponentProps) {
   return (
     <View style={[styles.drawerContent, { backgroundColor: colors.background }]}>
       <View>
-        <UserInforDrawer colors={colors} userData={userData} />
+        <UserInforDrawer isLoader={loader} colors={colors} userData={userData} />
       </View>
       <View style={{ flex: 1 }}>
         <LinksOptionsDrawer />

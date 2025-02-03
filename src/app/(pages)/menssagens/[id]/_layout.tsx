@@ -1,5 +1,5 @@
 import { useTheme } from "@/hooks/useTheme"
-import { supabase } from "@/utils/supabase"
+import { url } from "@/utils/url-api"
 import { format, } from "date-fns"
 import { formatDistanceToNow } from "date-fns/formatDistanceToNow"
 import { Image } from "expo-image"
@@ -18,17 +18,11 @@ export default function MensagensLayout() {
   useEffect(() => {
     const fetchData = async () => {
       if (id) {
-        const { data: userData, error: userError } = await supabase
-          .from("users")
-          .select("name, isOnline, lastOnline, imageurl")
-          .eq("clerk_id", id)
-          .single()
-
-        if (userError) {
-          console.error("Error fetching user:", userError.message)
-          return
+        const res = await fetch(`${url}/api/user/${id}`)
+        if (!res.ok) {
+          throw new Error(`Error fetching user data: ${res.status}`)
         }
-
+        const userData = await res.json()
         setName(userData.name)
         setImage(userData.imageurl)
         setIsOnline(userData.isOnline)

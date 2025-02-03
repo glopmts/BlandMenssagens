@@ -1,5 +1,5 @@
 import { useTheme } from "@/hooks/useTheme";
-import { supabase } from "@/utils/supabase";
+import { url } from "@/utils/url-api";
 import { useUser } from "@clerk/clerk-expo";
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -35,46 +35,21 @@ export default function AddContacts() {
     try {
       const normalizedPhone = normalizePhoneNumber(phoneNumber);
 
-      const { data: existingContact, error: contactError } = await supabase
-        .from("contacts")
-        .select("id")
-        .eq("phone", normalizedPhone)
-        .eq("user_id", user?.id)
-        .single();
-
-      if (contactError && contactError.code !== "PGRST116") {
-        throw contactError;
-      }
-
-      if (existingContact) {
-        Alert.alert("Erro", "Esse contato já está salvo na sua lista.");
-        setIsLoading(false);
-        return;
-      }
-
-      const { data: existingUser, error: userError } = await supabase
-        .from("users")
-        .select("id, imageurl")
-        .eq("phone", normalizedPhone)
-        .single();
-
-      if (userError && userError.code !== "PGRST116") {
-        throw userError;
-      }
-
-      const { data, error } = await supabase
-        .from("contacts")
-        .insert({
-          user_id: user?.id,
-          contact_id: existingUser?.id,
-          clerk_id: existingUser?.id,
+      const res = await fetch(`${url}/user/addContacts`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
           phone: normalizedPhone,
           name,
-          image: existingUser?.imageurl
-        });
+          user_id: user?.id,
+        }),
+      })
 
-      if (error) {
-        throw error;
+      if (!res.ok) {
+        Alert.alert("Failed to add contact!")
+        throw new Error("Não foi possível adicionar o contato");
       }
 
       ToastAndroid.show("Contato criado com sucesso", ToastAndroid.SHORT);
@@ -88,7 +63,6 @@ export default function AddContacts() {
       setIsLoading(false);
     }
   };
-
 
   useEffect(() => {
     if (phoneNumber === "") {

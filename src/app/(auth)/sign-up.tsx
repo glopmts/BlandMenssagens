@@ -1,5 +1,5 @@
 import { useTheme } from "@/hooks/useTheme"
-import { supabase } from "@/utils/supabase"
+import { url } from "@/utils/url-api"
 import { useSignUp } from "@clerk/clerk-expo"
 import { useRouter } from "expo-router"
 import { parsePhoneNumber } from "libphonenumber-js"
@@ -32,7 +32,6 @@ export default function SignUp() {
     }
   }
 
-
   const handleVerifyCode = async () => {
     if (!isLoaded) return;
     setLoader(true);
@@ -58,18 +57,21 @@ export default function SignUp() {
         return;
       }
 
-      const { error } = await supabase.from("users").insert([
-        {
+      const res = await fetch(`/${url}/api/user/create`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
           id: clerkId,
           clerk_id: clerkId,
           phone: phoneNumberFormatted,
-        },
-      ]);
+        }),
+      })
 
-      if (error) {
-        console.error("Erro ao salvar no Supabase:", error);
-        Alert.alert("Erro", "Não foi possível salvar os dados do usuário.");
-        return;
+      if (!res.ok) {
+        Alert.alert("Erro", "Falha ao salvar dados no banco de dados.");
+        throw new Error(`HTTP error! status: ${res.status}`);
       }
 
       Alert.alert("Sucesso", "Conta criada com sucesso!");

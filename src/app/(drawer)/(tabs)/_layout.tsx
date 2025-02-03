@@ -3,7 +3,7 @@ import { Entypo, Ionicons } from '@expo/vector-icons'; // Importe o ícone de lu
 import { DrawerActions } from "@react-navigation/native";
 import { Stack, useNavigation } from 'expo-router';
 import React from 'react';
-import { Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 export default function TabLayout() {
   const { colors } = useTheme();
   const navigation = useNavigation()
@@ -31,9 +31,9 @@ export default function TabLayout() {
         options={{
           headerTitle: () => (
             <View style={styles.headerIcons}>
-              <Pressable onPress={toggleMenu} >
+              <TouchableOpacity onPress={toggleMenu} >
                 <Entypo name="menu" color={colors.text} size={32} />
-              </Pressable>
+              </TouchableOpacity>
               <Text style={[styles.headerTitle, { color: colors.text }]}>BlobSend</Text>
             </View>
           ),

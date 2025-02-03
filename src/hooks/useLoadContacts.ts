@@ -1,5 +1,5 @@
 import type { Contact } from "@/types/interfaces"
-import { supabase } from "@/utils/supabase"
+import { url } from "@/utils/url-api"
 import { useCallback, useEffect, useState } from "react"
 
 export const useLoadContacts = (userId: string | null) => {
@@ -10,27 +10,19 @@ export const useLoadContacts = (userId: string | null) => {
   const loadContactsFromSupabase = useCallback(async () => {
     if (!userId) return
     setIsLoading(true)
-
-    const { data, error } = await supabase
-      .from("contacts")
-      .select(`
-        *,
-        contact:users!contacts_contact_id_fkey (
-          clerk_id,
-          phone,
-          name,
-          imageurl
-        )
-      `)
-      .eq("user_id", userId)
-
-    if (error) {
-      console.error("Erro ao carregar contatos do Supabase:", error.message)
-      setError("Erro ao carregar contatos.")
-    } else {
-      setContacts(data || [])
+    const res = await fetch(`${url}/api/contacts/${userId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+    if (!res.ok) {
+      setError(`Erro ao carregar contatos. Status: ${res.status}`)
+      throw new Error(`HTTP error! status: ${res.status}`)
     }
-
+    const data = await res.json()
+    setContacts(data)
+    setError(null)
     setIsLoading(false)
   }, [userId])
 

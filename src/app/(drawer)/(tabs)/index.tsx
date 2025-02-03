@@ -1,4 +1,4 @@
-import { useClerk, useUser } from "@clerk/clerk-expo"
+import { useUser } from "@clerk/clerk-expo"
 import * as Contacts from "expo-contacts"
 import { parsePhoneNumber } from "libphonenumber-js"
 import { useEffect } from "react"
@@ -8,49 +8,60 @@ import { requestNotificationPermission, useRegisterPushToken } from "@/component
 import ContactsScreen from "@/components/ListContacts"
 import MenssagensList from "@/components/ListMenssagens"
 import { useTheme } from "@/hooks/useTheme"
-import { supabase } from "@/utils/supabase"
 import { updateUserOnlineStatus } from "@/utils/userStatus"
 
+import { url } from "@/utils/url-api"
 import { stylesHome } from "./stylesHome"
-
 
 export default function TabOneScreen() {
   const { colors } = useTheme()
   const { isLoaded, user } = useUser()
-  const { signOut } = useClerk()
 
   useRegisterPushToken(user?.id!)
 
   useEffect(() => {
     const saveUserInfo = async () => {
       if (user) {
-        const phoneNumber = user.phoneNumbers[0]?.phoneNumber
+        const phoneNumber = user.phoneNumbers[0]?.phoneNumber;
         if (!phoneNumber) {
-          console.error("No phone number found for user")
-          return
+          console.error("No phone number found for user");
+          return;
         }
 
-        const phoneNumberFormatted = parsePhoneNumber(phoneNumber, "BR")?.format("E.164")
+        const phoneNumberFormatted = parsePhoneNumber(phoneNumber, "BR")?.format("E.164");
         if (!phoneNumberFormatted) {
-          console.error("Error formatting phone number")
-          return
+          console.error("Error formatting phone number");
+          return;
         }
 
-        const { error } = await supabase.from("users").upsert({
-          id: user.id,
-          clerk_id: user.id,
-          phone: phoneNumberFormatted,
-        })
+        try {
+          const response = await fetch(`${url}/api/user/create`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              clerk_id: user.id,
+              phone: phoneNumberFormatted,
+            }),
+          });
 
-        if (error) {
-          console.error("Error saving user:", error.message)
-        } else {
-          console.log("User saved successfully")
+          const data = await response.json();
+          console.log("Resposta do backend:", data)
+
+          if (!response.ok) {
+            throw new Error("Failed to save user");
+          }
+
+          console.log("User saved successfully");
+        } catch (error) {
+          console.error("Error saving user:", error);
         }
       }
-    }
-    saveUserInfo()
-  }, [user])
+    };
+
+    saveUserInfo();
+  }, [user]);
 
   useEffect(() => {
     const getContacts = async () => {
@@ -89,6 +100,7 @@ export default function TabOneScreen() {
     const subscription = AppState.addEventListener("change", handleAppStateChange)
     return () => subscription.remove()
   }, [user])
+
 
   useEffect(() => {
     updateUserOnlineStatus(user?.id, true)

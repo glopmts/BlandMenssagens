@@ -1,13 +1,13 @@
 import { useTheme } from "@/hooks/useTheme";
 import { storage } from "@/utils/firebase";
-import { supabase } from "@/utils/supabase";
+import { url } from "@/utils/url-api";
 import { useClerk } from "@clerk/clerk-expo";
 import * as ImageManipulator from 'expo-image-manipulator';
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { useState } from "react";
-import { Image, Platform, StyleSheet, Text, TextInput, ToastAndroid, TouchableOpacity, View } from "react-native";
+import { Alert, Image, Platform, StyleSheet, Text, TextInput, ToastAndroid, TouchableOpacity, View } from "react-native";
 
 export default function UpdateProfile() {
   const { colors } = useTheme();
@@ -66,29 +66,24 @@ export default function UpdateProfile() {
         imageUrl = await uploadImage(image);
       }
 
-      const { error: updateError } = await supabase.from('users').update({
-        clerk_id: user?.id,
-        imageurl: imageUrl,
-        name: name,
-        email: email,
-      }).eq('clerk_id', user?.id);
+      const res = await fetch(`${url}/user/update`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name,
+          email,
+          imageurl: imageUrl,
+        }),
+      })
 
-      const { error: updateErrorContac } = await supabase.from('contacts').update({
-        clerk_id: user?.id,
-        image: imageUrl,
-      }).eq('clerk_id', user?.id);
-
-      if (updateErrorContac) {
-        throw new Error(`Update error: ${updateErrorContac.message}`);
+      if (!res.ok) {
+        Alert.alert("Error updating profile!")
+        throw new Error('Falha ao atualizar o usuário!');
       }
-
-      if (updateError) {
-        throw new Error(`Update error: ${updateError.message}`);
-      }
-      console.log('User data updated successfully');
-
       ToastAndroid.show('Perfil atualizado com sucesso!', ToastAndroid.SHORT);
-      router.navigate('/(tabs)');
+      router.navigate('/(drawer)/(tabs)');
     } catch (err) {
       setError('Falha ao atualizar o perfil!');
       console.error('Error updating profile:', err);

@@ -1,5 +1,5 @@
 import { useTheme } from "@/hooks/useTheme"
-import { supabase } from "@/utils/supabase"
+import { url } from "@/utils/url-api"
 import { useSignIn } from "@clerk/clerk-expo"
 import { Link, useRouter } from "expo-router"
 import { useState } from "react"
@@ -39,36 +39,16 @@ export default function Page() {
       if (completeSignIn.status === "complete") {
         await setActive({ session: completeSignIn.createdSessionId });
 
-        const { data: existingUser, error: userError } = await supabase
-          .from("users")
-          .select("*")
-          .eq("phone", phoneNumber)
-          .single();
+        const response = await fetch(`${url}/api/auth/verify-otp`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            clerkId: completeSignIn?.id,
+            phoneNumber,
+          }),
+        });
 
-        if (userError && userError.code !== "PGRST116") {
-          Alert.alert("Erro", "Erro ao verificar usuário no banco.");
-          return;
-        }
-
-        if (!existingUser) {
-          const { error: insertError } = await supabase.from("users").insert([
-            {
-              id: existingUser.id,
-              phone: phoneNumber,
-              created_at: new Date(),
-            },
-          ]);
-
-          if (insertError) {
-            Alert.alert("Erro", "Erro ao criar usuário no banco.");
-            return;
-          }
-        } else {
-          await supabase
-            .from("users")
-            .update({ last_login: new Date() })
-            .eq("phone", phoneNumber);
-        }
+        const data = await response.json();
         router.push("/(drawer)/(tabs)");
       } else {
         Alert.alert("Erro", "Falha na verificação. Tente novamente.");

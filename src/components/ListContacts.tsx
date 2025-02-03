@@ -1,11 +1,11 @@
 import { useTheme } from "@/hooks/useTheme"
 import type { Contact, User } from "@/types/interfaces"
-import { supabase } from "@/utils/supabase"
+import { url } from "@/utils/url-api"
 import { useUser } from "@clerk/clerk-expo"
 import { Image } from "expo-image"
 import { useRouter } from "expo-router"
 import { useEffect, useState } from "react"
-import { ActivityIndicator, FlatList, StyleSheet, Text, TouchableOpacity, View } from "react-native"
+import { ActivityIndicator, Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from "react-native"
 
 const styles = StyleSheet.create({
   container: {
@@ -66,42 +66,54 @@ export default function ContactsScreen() {
   const [users, setUsers] = useState<User[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
-  const loadContactsFromSupabase = async () => {
-    if (!user) return
+  const loadContacts = async (userId: string) => {
+    if (!userId) return;
+
     try {
-      setIsLoading(true)
-      setError(null)
+      const response = await fetch(`${url}/api/user/contacts/${userId}`);
+      const data = await response.json();
 
-      const { data: contactsData, error: contactsError } = await supabase
-        .from("contacts")
-        .select("*")
-        .eq("user_id", user.id)
+      if (!response.ok) {
+        setError("Não foi possível buscar contatos.");
+        throw new Error(data.message || "Erro ao buscar contatos.");
+      }
 
-      if (contactsError) throw contactsError
-      setContacts(contactsData || [])
+      setContacts(data);
+      setUsers(await fetchUsers(data.map((contact: Contact) => contact.contact_id)));
+      setIsLoading(false);
+      return data;
+    } catch (error: any) {
+      Alert.alert("Erro", error.message);
+      return [];
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-      if (contactsData && contactsData.length > 0) {
-        const contactIds = contactsData
-          .map((contact) => contact.contact_id)
-          .filter((id) => id)
-        const { data: usersData, error: usersError } = await supabase
-          .from("users")
-          .select("*")
-          .in("clerk_id", contactIds)
-        if (usersError) throw usersError
+  const fetchUsers = async (contactIds: number[]) => {
+    if (!contactIds.length) return [];
 
-        setUsers(usersData || [])
+    try {
+      const response = await fetch(`${url}/api/users`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ user_ids: contactIds }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        setError("Não foi possível buscar contatos.");
+        throw new Error(data.message || "Erro ao buscar contatos.");
       }
     } catch (err) {
-      console.error("Error loading contacts:", err)
-      setError("Erro ao carregar contatos. Por favor, tente novamente.")
-    } finally {
-      setIsLoading(false)
+      Alert.alert("Erro", error!);
     }
+    return [];
   }
 
   useEffect(() => {
-    loadContactsFromSupabase()
+    loadContacts(user?.id!);
   }, [user])
 
   const ContactListItem = ({ item, users, colors, router }: any) => {

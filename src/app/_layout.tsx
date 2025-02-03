@@ -43,14 +43,10 @@ async function requestNotificationPermissions() {
   }
 }
 
-
-
-
 function RootLayoutNav() {
   const { colors } = useTheme();
   const { isLoaded, isSignedIn } = useAuth();
   const router = useRouter();
-
 
   useEffect(() => {
     if (isLoaded && !isSignedIn) {
@@ -95,8 +91,10 @@ function RootLayoutNav() {
               headerShown: false,
             }}
           >
-            <Stack.Screen name="(tabs)" />
+            <Stack.Screen name="(drawer)" />
             <Stack.Screen name="(auth)" />
+            <Stack.Screen name="(profile)" />
+            <Stack.Screen name="(pages)" />
             <Stack.Screen name="+not-found" />
           </Stack>
         </PortalProvider>

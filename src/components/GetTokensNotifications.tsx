@@ -1,4 +1,4 @@
-import { supabase } from '@/utils/supabase';
+import { url } from '@/utils/url-api';
 import * as Notifications from 'expo-notifications';
 import { useEffect } from 'react';
 import { Platform } from 'react-native';
@@ -47,18 +47,22 @@ export const useRegisterPushToken = (userId: string) => {
 
         console.log('Novo Push Token:', pushToken);
 
-        const { error } = await supabase
-          .from('users')
-          .update({ push_token: pushToken })
-          .eq('clerk_id', userId);
+        const res = await fetch(`${url}/api/user/pushtoken`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userId,
+            push_token: pushToken,
+          }),
+        })
 
-        if (error) {
-          console.error('Erro ao salvar token:', error.message);
-        } else {
-
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
         }
-      } catch (err) {
-        console.error('Erro ao registrar notificações:', err);
+      } catch (error) {
+        console.error('Error registering for push notifications:', error);
       }
     };
 

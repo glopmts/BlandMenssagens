@@ -1,11 +1,11 @@
 import { useTheme } from "@/hooks/useTheme"
 import type { Mensagens } from "@/types/interfaces"
-import { supabase } from "@/utils/supabase"
+import { url } from "@/utils/url-api"
 import { useUser } from "@clerk/clerk-expo"
 import { Image } from "expo-image"
 import { router } from "expo-router"
 import { useCallback, useEffect, useState } from "react"
-import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, Text, TouchableOpacity, View } from "react-native"
+import { ActivityIndicator, Alert, FlatList, RefreshControl, StyleSheet, Text, TouchableOpacity, View } from "react-native"
 
 export default function MensagensList() {
   const { user } = useUser()
@@ -16,88 +16,40 @@ export default function MensagensList() {
 
   useEffect(() => {
     if (user?.id) {
-      fetchMensagens()
+      fetchMensagens(user.id)
     }
   }, [user?.id])
 
-  const fetchMensagens = async () => {
+  const fetchMensagens = async (userId: string) => {
+    setLoading(true)
     try {
-      const { data: existingMensagens, error } = await supabase
-        .from("messages")
-        .select("*, sender_id, receiver_id, created_at")
-        .or(`receiver_id.eq.${user?.id},sender_id.eq.${user?.id}`)
-        .order("created_at", { ascending: false });
+      const response = await fetch(`${url}/api/user/menssagens/${userId}`);
+      const data = await response.json();
 
-      if (error) {
-        console.error("Error fetching messages:", error.message);
-        return;
+      if (!response.ok) {
+        throw new Error(data.message || "Erro ao buscar mensagens.");
       }
 
-      const userIds = [
-        ...new Set(existingMensagens?.map((msg) => msg.sender_id).concat(existingMensagens?.map((msg) => msg.receiver_id)))
-      ];
-
-      const { data: usersData, error: usersError } = await supabase
-        .from("users")
-        .select("*")
-        .in("clerk_id", userIds);
-
-      const { data: contactsData, error: contactsError } = await supabase
-        .from("contacts")
-        .select("*")
-        .in("clerk_id", userIds);
-
-      if (usersError || contactsError) {
-        console.error("Error fetching users or contacts:", usersError?.message || contactsError?.message);
-        return;
-      }
-
-      const usersMap = new Map();
-      usersData?.forEach((user) => {
-        usersMap.set(user.clerk_id, user);
-      });
-
-      const contactsMap = new Map();
-      contactsData?.forEach((contact) => {
-        contactsMap.set(contact.clerk_id, contact);
-      });
-
-      const uniqueChats = new Map();
-      existingMensagens?.forEach((msg) => {
-        const chatKey = msg.sender_id === user?.id ? msg.receiver_id : msg.sender_id;
-
-        if (!uniqueChats.has(chatKey)) {
-          const contact = contactsMap.get(chatKey);
-          const user = usersMap.get(chatKey);
-
-          uniqueChats.set(chatKey, {
-            ...msg,
-            contact_name: contact?.name || user?.name,
-            contact_image: contact?.image || user?.imageurl,
-          });
-        }
-      });
-
-      const mensagensFormatadas = Array.from(uniqueChats.values()).map((mensagem) => ({
+      const mensagensFormatadas = data.map((mensagem: any) => ({
         ...mensagem,
         id: mensagem.id.toString(),
         sender_id: mensagem.sender_id.toString(),
         receiver_id: mensagem.receiver_id.toString(),
       }));
 
-      setMensagens(mensagensFormatadas);
-    } catch (error) {
-      console.error("Error fetching messages:", error);
+      return mensagensFormatadas;
+    } catch (error: any) {
+      Alert.alert("Erro", error.message);
+      return [];
     } finally {
-      setLoading(false);
-      setRefreshing(false);
+      setLoading(false)
+      setRefreshing(false)
     }
   };
 
-
   const onRefresh = useCallback(() => {
     setRefreshing(true)
-    fetchMensagens()
+    fetchMensagens(user?.id!)
   }, [fetchMensagens])
 
   const renderItem = ({ item }: { item: Mensagens }) => (
