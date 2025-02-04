@@ -1,7 +1,7 @@
 import { Dimensions, Platform, StyleSheet } from "react-native";
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const MAX_IMAGE_WIDTH = SCREEN_WIDTH * 0.7; // 70% da largura da tela
+const MAX_IMAGE_WIDTH = SCREEN_WIDTH * 0.5;
 
 export const stylesChat = StyleSheet.create({
   container: {
@@ -37,6 +37,7 @@ export const stylesChat = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
+    minWidth: 80,
   },
   sentMessage: {
     alignSelf: "flex-end",
@@ -50,9 +51,16 @@ export const stylesChat = StyleSheet.create({
     fontSize: 16,
     lineHeight: 22,
   },
+  messageTextImage: {
+    fontSize: 16,
+    lineHeight: 22,
+    right: 0,
+    alignContent: "flex-end",
+    zIndex: 1,
+  },
   timeText: {
-    fontSize: 11,
-    opacity: 0.7,
+    fontSize: 13,
+    opacity: 0.9,
     marginTop: 4,
     textAlign: "right",
   },
@@ -109,13 +117,36 @@ export const stylesChat = StyleSheet.create({
   ImagesChat: {
     marginBottom: 8,
     borderRadius: 12,
+    padding: 1,
     overflow: "hidden",
+    position: "relative"
   },
+  imageContainer: {
+    position: "relative",
+    alignItems: "center",
+  },
+  imageTime: {
+    position: "absolute",
+    bottom: 5,
+    right: 10,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    color: "#fff",
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    borderRadius: 5,
+    fontSize: 12,
+  },
+
+  imageCaption: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    padding: 4,
+  },
+
   image: {
     width: MAX_IMAGE_WIDTH,
     height: MAX_IMAGE_WIDTH * 0.75,
     borderRadius: 12,
-    marginBottom: 4,
   },
   imageGrid: {
     flexDirection: 'row',
@@ -129,7 +160,9 @@ export const stylesChat = StyleSheet.create({
     borderRadius: 8,
     margin: 1,
   },
-
+  messageContent: {
+    maxWidth: MAX_IMAGE_WIDTH,
+  },
   optionsButton: {
     position: "absolute",
     top: 3,
@@ -141,5 +174,9 @@ export const stylesChat = StyleSheet.create({
     flexDirection: 'row',
     gap: 20,
     width: "auto"
+  },
+  deletedMessage: {
+    color: "gray",
+    fontStyle: "italic",
   }
 })

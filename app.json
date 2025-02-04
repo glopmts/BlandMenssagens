@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "app-messagens",
+    "name": "BlobSend",
     "slug": "app-messagens",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
@@ -12,16 +12,16 @@
       "supportsTablet": true
     },
     "android": {
-      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/images/splash-icon.png",
+        "backgroundColor": "#1E1E1E"
       },
       "permissions": [
         "android.permission.READ_CONTACTS",
         "android.permission.WRITE_CONTACTS"
       ],
-      "package": "com.glopblog.glopsend"
+      "package": "com.glopblog.glopsend",
+      "googleServicesFile": "./path/google-services.json"
     },
     "web": {
       "bundler": "metro",

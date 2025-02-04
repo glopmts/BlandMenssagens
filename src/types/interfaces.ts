@@ -27,10 +27,21 @@ export interface Mensagens {
   sender_id: string
   receiver_id: string
   content: string
+  legendImage?: string,
   created_at: string
   contact_name: string
   contact_phone: string
+  is_deleted: boolean
   contact_image?: string | null;
   images: string[]
   status: "send" | "delivered" | "read"
+}
+
+export interface MessageProperties {
+  item: Mensagens
+  user: any
+  colors: any
+  handleCopy: (text: string, messageId: string) => void
+  downloadImage: (image: string) => void
+  deleteMessage: (messageId: string, created_at: string) => void
 }

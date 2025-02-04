@@ -1,3 +1,4 @@
+import { stylesListMenssagens } from "@/app/styles/ListMenssagens";
 import { useTheme } from "@/hooks/useTheme";
 import { Mensagens } from "@/types/interfaces";
 import { url } from "@/utils/url-api";
@@ -5,7 +6,7 @@ import { useUser } from "@clerk/clerk-expo";
 import { Image } from "expo-image";
 import { router } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, Alert, FlatList, RefreshControl, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Alert, FlatList, RefreshControl, Text, TouchableOpacity, View } from "react-native";
 
 import io from "socket.io-client";
 const socket = io("http://192.168.18.8:5001");
@@ -17,37 +18,6 @@ export default function MensagensList() {
   const [isLoading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const { colors } = useTheme();
-
-  useEffect(() => {
-    if (user?.id) {
-      fetchMensagens(user.id);
-
-      socket.on('send_message', (newMessage: Mensagens) => {
-        setMensagens((prevMensagens) => {
-          const chatId = newMessage.sender_id === user.id ? newMessage.receiver_id : newMessage.sender_id;
-
-          const existingMessageIndex = prevMensagens.findIndex(
-            (msg) => (msg.sender_id === chatId || msg.receiver_id === chatId)
-          );
-
-          if (existingMessageIndex !== -1) {
-            const updatedMessages = [...prevMensagens];
-            updatedMessages[existingMessageIndex] = newMessage;
-            return updatedMessages;
-          } else {
-            return [newMessage, ...prevMensagens];
-          }
-        });
-      });
-    }
-
-    return () => {
-      if (socket) {
-        socket.off('send_message');
-        socket.disconnect();
-      }
-    };
-  }, [user?.id]);
 
   const fetchMensagens = async (userId: string) => {
     setLoading(true);
@@ -83,6 +53,52 @@ export default function MensagensList() {
     fetchMensagens(user?.id!);
   }, [fetchMensagens]);
 
+  useEffect(() => {
+    if (user?.id) {
+      fetchMensagens(user.id);
+    }
+  }, [user])
+
+
+  function ListMensagens({ item, colors }: { item: Mensagens; colors: any }) {
+    const { user } = useUser();
+    const lastSeenText = item.created_at
+      ? new Date(item.created_at).toLocaleString()
+      : "Never seen";
+
+    const isSender = item.sender_id === user?.id;
+    const contact = isSender ? item.receiver : item.sender;
+    const contactImage = contact.imageurl;
+    const contactName = contact.name;
+
+    const renderImage = contactImage ? (
+      <Image source={{ uri: contactImage }} style={stylesListMenssagens.contactImage} />
+    ) : (
+      <View style={[stylesListMenssagens.contactInitial, { backgroundColor: colors.primary }]}>
+        <Text style={stylesListMenssagens.contactInitialText}>
+          {contactName ? contactName.charAt(0).toUpperCase() : ""}
+        </Text>
+      </View>
+    );
+
+    return (
+      <TouchableOpacity
+        style={stylesListMenssagens.messagesItem}
+        onPress={() => router.navigate(`/(pages)/menssagens/${contact.clerk_id}`)}
+      >
+        {renderImage}
+        <View style={stylesListMenssagens.contaInfo}>
+          <View style={stylesListMenssagens.namesDate}>
+            <Text style={[stylesListMenssagens.contactName, { color: colors.text }]}>
+              {contactName || "Name not found"}
+            </Text>
+            <Text style={stylesListMenssagens.lastSeen}>{lastSeenText}</Text>
+          </View>
+          <Text style={[stylesListMenssagens.messageText, { color: colors.text }]}>{item.content}</Text>
+        </View>
+      </TouchableOpacity>
+    );
+  }
 
   const renderItem = ({ item }: { item: Mensagens }) => (
     <ListMensagens item={item} colors={colors} />
@@ -103,9 +119,9 @@ export default function MensagensList() {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.backgroundColorContacts }]}>
+    <View style={[stylesListMenssagens.container, { backgroundColor: colors.backgroundColorContacts }]}>
       {isLoading ? (
-        <View style={styles.loadingContainer}>
+        <View style={stylesListMenssagens.loadingContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
         </View>
       ) : (
@@ -114,7 +130,7 @@ export default function MensagensList() {
           extraData={mensagens}
           keyExtractor={(item) => item.id}
           renderItem={renderItem}
-          ListEmptyComponent={<Text style={[styles.emptyText, { color: colors.text }]}>No messages yet!</Text>}
+          ListEmptyComponent={<Text style={[stylesListMenssagens.emptyText, { color: colors.text }]}>No messages yet!</Text>}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
@@ -129,108 +145,4 @@ export default function MensagensList() {
   );
 }
 
-function ListMensagens({ item, colors }: { item: Mensagens; colors: any }) {
-  const { user } = useUser();
-  const lastSeenText = item.created_at
-    ? new Date(item.created_at).toLocaleString()
-    : "Never seen";
 
-  const isSender = item.sender_id === user?.id;
-  const contact = isSender ? item.receiver : item.sender;
-  const contactImage = contact.imageurl;
-  const contactName = contact.name;
-
-  const renderImage = contactImage ? (
-    <Image source={{ uri: contactImage }} style={styles.contactImage} />
-  ) : (
-    <View style={[styles.contactInitial, { backgroundColor: colors.primary }]}>
-      <Text style={styles.contactInitialText}>
-        {contactName ? contactName.charAt(0).toUpperCase() : ""}
-      </Text>
-    </View>
-  );
-
-  return (
-    <TouchableOpacity
-      style={styles.messagesItem}
-      onPress={() => router.navigate(`/(pages)/menssagens/${contact.clerk_id}`)}
-    >
-      {renderImage}
-      <View style={styles.contaInfo}>
-        <View style={styles.namesDate}>
-          <Text style={[styles.contactName, { color: colors.text }]}>
-            {contactName || "Name not found"}
-          </Text>
-          <Text style={styles.lastSeen}>{lastSeenText}</Text>
-        </View>
-        <Text style={[styles.messageText, { color: colors.text }]}>{item.content}</Text>
-      </View>
-    </TouchableOpacity>
-  );
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    width: "100%",
-    paddingHorizontal: 5,
-  },
-  messagesItem: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    padding: 10,
-  },
-  emptyText: {
-    fontSize: 18,
-    textAlign: "center",
-    marginTop: 20,
-  },
-  contactName: {
-    fontSize: 16,
-    fontWeight: "800",
-    marginBottom: 5,
-  },
-  lastSeen: {
-    color: "gray",
-    fontSize: 12,
-  },
-  contaInfo: {
-    flex: 1,
-    justifyContent: "space-between",
-    flexDirection: "column",
-  },
-  contactImage: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    marginRight: 10,
-  },
-  contactInitial: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 10,
-  },
-  contactInitialText: {
-    color: "white",
-    fontSize: 24,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  messageText: {
-    fontSize: 16,
-    marginBottom: 5,
-    lineHeight: 20,
-    maxWidth: 200,
-  },
-  namesDate: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 5,
-  },
-});

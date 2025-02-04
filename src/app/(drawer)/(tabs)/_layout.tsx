@@ -10,7 +10,7 @@ export default function TabLayout() {
   const toggleMenu = () => navigation.dispatch(DrawerActions.toggleDrawer())
 
   const handleSearchPress = () => {
-    alert('Lupa pressionada!');
+    alert('Trabalhando nesta atualização!');
   };
 
   return (
@@ -40,7 +40,7 @@ export default function TabLayout() {
           headerRight: () => (
             <View>
               <TouchableOpacity onPress={handleSearchPress} style={styles.searchIcon}>
-                <Ionicons name="search" size={24} color={colors.text} />
+                <Ionicons name="notifications" size={24} color={colors.text} />
               </TouchableOpacity>
             </View>
           ),

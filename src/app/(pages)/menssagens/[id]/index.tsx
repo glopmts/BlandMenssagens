@@ -1,9 +1,11 @@
 import { MessageItem } from "@/components/MessagensRenderChat"
+import NoAddContact from "@/components/NoContactAdd"
 import { useMessages } from "@/hooks/useMessages"
 import { useTheme } from "@/hooks/useTheme"
 import type { Mensagens } from "@/types/interfaces"
 import { storage } from "@/utils/firebase"
 import { downloadImage } from "@/utils/saveImagesUrl"
+import { url } from "@/utils/url-api"
 import { useClerk } from "@clerk/clerk-expo"
 import { Ionicons } from "@expo/vector-icons"
 import * as Clipboard from "expo-clipboard"
@@ -11,7 +13,7 @@ import { Image } from "expo-image"
 import * as ImagePicker from "expo-image-picker"
 import { useLocalSearchParams } from "expo-router"
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage"
-import React, { useRef, useState } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import {
   ActivityIndicator,
   FlatList,
@@ -24,17 +26,18 @@ import {
 } from "react-native"
 import { stylesChat } from "../styles/stylesChat"
 
-
-
 export default function MensagensPageRender() {
   const { user } = useClerk()
   const { id } = useLocalSearchParams<{ id: string }>()
   const { colors } = useTheme()
   const { messages, loading, sendMessage, handleDeleteMessage } = useMessages(user?.id || "", id)
   const [newMessage, setNewMessage] = useState("")
-  const [imageUrl, setImageUrl] = useState<string[] | null>(null)
+  const [legendImage, setLegendImage] = useState("")
+  const [imageUrl, setImageUrl] = useState<string[]>([])
   const [isUploading, setIsUploading] = useState(false)
   const flatListRef = useRef<FlatList>(null)
+  const [phoneNumber, setPhoneNumber] = useState<string | null>(null)
+  const contactId = messages.find((d) => user?.id === d.receiver_id)?.sender_id;
 
   const handleCopy = async (text: string, id: string) => {
     try {
@@ -81,24 +84,24 @@ export default function MensagensPageRender() {
 
   const handleSend = async () => {
     if (!newMessage.trim() && (!imageUrl || imageUrl.length === 0)) return
-
-    await sendMessage(newMessage, imageUrl)
+    await sendMessage(newMessage, legendImage, imageUrl ?? [])
     setNewMessage("")
-    setImageUrl(null)
+    setImageUrl([])
     Keyboard.dismiss()
     flatListRef.current?.scrollToEnd({ animated: true })
   }
 
-  const renderMessage = ({ item }: { item: Mensagens }) => (
-    <MessageItem
-      item={item}
-      user={user}
-      colors={colors}
-      handleCopy={handleCopy}
-      downloadImage={downloadImage}
-      deleteMessage={handleDeleteMessage}
-    />
-  );
+  useEffect(() => {
+    const fetchData = async () => {
+      const response = await fetch(`${url}/api/user/${contactId}`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch user data");
+      }
+      const userData = await response.json();
+      setPhoneNumber(userData.phone);
+    }
+    fetchData();
+  }, [contactId])
 
   if (loading) {
     return (
@@ -113,6 +116,17 @@ export default function MensagensPageRender() {
     )
   }
 
+  const renderMessage = ({ item }: { item: Mensagens }) => (
+    <MessageItem
+      item={item}
+      user={user}
+      colors={colors}
+      handleCopy={handleCopy}
+      downloadImage={downloadImage}
+      deleteMessage={(messageId) => handleDeleteMessage(messageId, item.created_at, user?.id!)}
+    />
+  );
+
   return (
     <View style={[stylesChat.container, { backgroundColor: colors.background }]}>
       <View style={[stylesChat.header, { borderBottomColor: colors.borderColor }]}>
@@ -120,6 +134,9 @@ export default function MensagensPageRender() {
           As menssagens são protegidas com a criptografia de ponta a ponta
           e ficam somente entre você e os participantes desta conversa.
         </Text>
+        <View>
+          <NoAddContact number={phoneNumber!} contactId={contactId!} userId={user?.id!} />
+        </View>
       </View>
       <FlatList
         ref={flatListRef}
@@ -135,7 +152,7 @@ export default function MensagensPageRender() {
           {imageUrl.map((url, index) => (
             <Image key={index} source={{ uri: url }} style={stylesChat.imagePreview} />
           ))}
-          <TouchableOpacity onPress={() => setImageUrl(null)} style={stylesChat.removeImageButton}>
+          <TouchableOpacity onPress={() => setImageUrl([])} style={stylesChat.removeImageButton}>
             <Ionicons name="close-circle" size={24} color="#fff" />
           </TouchableOpacity>
         </View>

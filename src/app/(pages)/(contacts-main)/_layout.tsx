@@ -29,7 +29,7 @@ export default function TabLayout() {
         options={{
           headerTitle: () => (
             <View style={styles.headerIcons}>
-              <Text style={[styles.headerTitle, { color: colors.text }]}></Text>
+              <Text style={[styles.headerTitle, { color: colors.text }]}>Contatos</Text>
             </View>
           ),
           headerRight: () => (

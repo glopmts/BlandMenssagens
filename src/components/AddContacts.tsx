@@ -13,7 +13,11 @@ import {
   View
 } from "react-native";
 
-export default function AddContacts() {
+interface AddContactsProps {
+  number?: string;
+}
+
+export default function AddContacts({ number }: AddContactsProps) {
   const { user } = useUser();
   const { colors } = useTheme();
 
@@ -22,9 +26,9 @@ export default function AddContacts() {
   const [isFocusedPhone, setIsFocusedPhone] = useState(false);
   const [isFocusedName, setIsFocusedName] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [phoneNumber, setPhoneNumber] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState(number);
   const [name, setName] = useState("");
-  const isFormValid = phoneNumber.trim() !== "" && name.trim() !== "";
+  const isFormValid = phoneNumber?.trim() !== "" && name.trim() !== "";
 
   const handleAddContact = async () => {
     if (!isFormValid) return;

@@ -111,7 +111,6 @@ export default function UpdateProfile() {
         throw new Error('Falha ao atualizar o usuário!');
       }
       ToastAndroid.show('Perfil atualizado com sucesso!', ToastAndroid.SHORT);
-      router.push('/(profile)/profile');
     } catch (err) {
       setError('Falha ao atualizar o perfil!');
       console.error('Error updating profile:', err);
@@ -162,9 +161,15 @@ export default function UpdateProfile() {
         value={email}
         onChangeText={setEmail}
       />
-      <TouchableOpacity style={[stylesUpdateProfile.button, { backgroundColor: colors.primary }]} onPress={handleSave}>
+      <TouchableOpacity disabled={isLoaded} style={[
+        stylesUpdateProfile.button,
+        {
+          backgroundColor: isLoaded ? "#cccccc" : colors.primary,
+          opacity: isLoaded ? 0.6 : 1,
+        },
+      ]} onPress={handleSave}>
         <Text style={[stylesUpdateProfile.buttonText, { color: colors.buttonText }]}>
-          {isLoaded ? "Atualizando..." : "Atualizar Perfil"}
+          {isLoaded ? <ActivityIndicator size={20} color={colors.text} /> : "Atualizar Perfil"}
         </Text>
       </TouchableOpacity>
     </View>

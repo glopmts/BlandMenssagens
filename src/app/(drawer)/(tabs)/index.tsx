@@ -1,5 +1,4 @@
 import { useUser } from "@clerk/clerk-expo"
-import * as Contacts from "expo-contacts"
 import { useEffect } from "react"
 import { ActivityIndicator, Alert, AppState, View } from "react-native"
 
@@ -9,30 +8,12 @@ import MenssagensList from "@/components/ListMenssagens"
 import { useTheme } from "@/hooks/useTheme"
 import { updateUserOnlineStatus } from "@/utils/userStatus"
 
-import { NotificationManager } from "@/components/NotificationManager"
 import { stylesHome } from "./stylesHome"
 
 export default function TabOneScreen() {
   const { colors } = useTheme()
   const { isLoaded, user } = useUser()
   const userId = user?.id || ''
-
-  NotificationManager({ userId: userId! })
-
-  useEffect(() => {
-    const getContacts = async () => {
-      const { status } = await Contacts.requestPermissionsAsync()
-      if (status === "granted") {
-        const { data } = await Contacts.getContactsAsync({
-          fields: [Contacts.Fields.Emails],
-        })
-        if (data.length > 0) {
-          console.log("First contact:", data[0])
-        }
-      }
-    }
-    getContacts()
-  }, [])
 
   useEffect(() => {
     const checkPermissions = async () => {
@@ -59,11 +40,20 @@ export default function TabOneScreen() {
 
 
   useEffect(() => {
-    updateUserOnlineStatus(user?.id, true)
-    const interval = setInterval(() => updateUserOnlineStatus(user?.id, true), 30000)
-    return () => clearInterval(interval)
-  }, [user])
-
+    updateUserOnlineStatus(user?.id, true);
+    const interval = setInterval(() => updateUserOnlineStatus(user?.id, true), 3000);
+    const handleAppStateChange = (nextAppState: string) => {
+      if (nextAppState === "background" || nextAppState === "inactive") {
+        updateUserOnlineStatus(user?.id, false);
+      }
+    };
+    const subscription = AppState.addEventListener("change", handleAppStateChange);
+    return () => {
+      clearInterval(interval);
+      subscription.remove();
+      updateUserOnlineStatus(user?.id, false);
+    };
+  }, [user]);
 
   if (!isLoaded) {
     return (

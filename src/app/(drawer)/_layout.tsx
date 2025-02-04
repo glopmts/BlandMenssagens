@@ -15,7 +15,7 @@ export default function DrawerServices() {
       <Drawer.Screen
         name="(tabs)"
       />
-
     </Drawer>
   )
 }
+

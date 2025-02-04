@@ -25,6 +25,7 @@ if (!publishableKey) {
   );
 }
 
+// Configurar o handler global das notificações
 Notifications.setNotificationHandler({
   handleNotification: async (notification) => {
     console.log('Notificação recebida no primeiro plano:', notification);
@@ -36,29 +37,19 @@ Notifications.setNotificationHandler({
   },
 });
 
-async function requestNotificationPermissions() {
-  const { status } = await Notifications.requestPermissionsAsync();
-  if (status !== 'granted') {
-    alert('Você precisa permitir notificações para receber alertas!');
-  } else {
-    console.log('Permissão concedida para notificações');
-  }
-}
-
 function RootLayoutNav() {
   const { colors } = useTheme();
   const { isLoaded, isSignedIn } = useAuth();
   const router = useRouter();
-  const notificationState = useNotifications()
+  const { registerForPushNotificationsAsync } = useNotifications();
 
   useEffect(() => {
     if (isLoaded && !isSignedIn) {
-      router.replace('/(auth)/sign-in');
-      requestNotificationPermissions();
+      router.push('/(auth)/sign-in');
       CreateUserBackend();
     }
+    registerForPushNotificationsAsync();
   }, [isLoaded, isSignedIn]);
-
 
   return (
     <>

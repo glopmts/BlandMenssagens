@@ -39,7 +39,7 @@ export default function Page() {
       if (completeSignIn.status === "complete") {
         await setActive({ session: completeSignIn.createdSessionId });
 
-        const response = await fetch(`${url}/api/auth/verify-otp`, {
+        await fetch(`${url}/api/auth/verify-otp`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -48,7 +48,6 @@ export default function Page() {
           }),
         });
 
-        const data = await response.json();
         router.push("/(drawer)/(tabs)");
       } else {
         Alert.alert("Erro", "Falha na verificação. Tente novamente.");

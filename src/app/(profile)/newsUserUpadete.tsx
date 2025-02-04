@@ -4,7 +4,7 @@ import { url } from "@/utils/url-api";
 import { useClerk } from "@clerk/clerk-expo";
 import * as ImageManipulator from 'expo-image-manipulator';
 import * as ImagePicker from "expo-image-picker";
-import { useRouter } from "expo-router";
+import { router } from "expo-router";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { useState } from "react";
 import { Alert, Image, Platform, StyleSheet, Text, TextInput, ToastAndroid, TouchableOpacity, View } from "react-native";
@@ -17,7 +17,6 @@ export default function NewsUserUpdateProfile() {
   const [isLoaded, setIsLoaded] = useState(false);
   const [error, setError] = useState("");
   const { user } = useClerk();
-  const router = useRouter();
 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -83,7 +82,7 @@ export default function NewsUserUpdateProfile() {
         throw new Error('Falha ao atualizar o usuário!');
       }
       ToastAndroid.show('Perfil atualizado com sucesso!', ToastAndroid.SHORT);
-      router.navigate('/(drawer)/(tabs)');
+      router.push('/(drawer)/(tabs)');
     } catch (err) {
       setError('Falha ao atualizar o perfil!');
       console.error('Error updating profile:', err);
