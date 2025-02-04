@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "34766556610",
+    "project_id": "app-pessoal-dec8f",
+    "storage_bucket": "app-pessoal-dec8f.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:34766556610:android:1572a9f2e8d6e88f88da5b",
+        "android_client_info": {
+          "package_name": "com.glopblog.glopsend"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA10RmguI8KbAdXfjOCcZ9r2rkJva8MVjc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

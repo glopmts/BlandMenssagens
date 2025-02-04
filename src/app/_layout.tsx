@@ -1,4 +1,5 @@
 import { ThemeProvider } from '@/context/ThemeContext';
+import { useNotifications } from '@/hooks/useNotifications';
 import { useTheme } from '@/hooks/useTheme';
 import { tokenCache } from '@/utils/cache';
 import { ClerkLoaded, ClerkProvider, useAuth } from '@clerk/clerk-expo';
@@ -28,9 +29,9 @@ Notifications.setNotificationHandler({
   handleNotification: async (notification) => {
     console.log('Notificação recebida no primeiro plano:', notification);
     return {
-      shouldShowAlert: true,  // Aqui você controla a exibição de alerta
-      shouldPlaySound: true,  // Se a notificação deve emitir som
-      shouldSetBadge: false,  // Se a notificação deve alterar o ícone
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: false,
     };
   },
 });
@@ -48,6 +49,7 @@ function RootLayoutNav() {
   const { colors } = useTheme();
   const { isLoaded, isSignedIn } = useAuth();
   const router = useRouter();
+  const notificationState = useNotifications()
 
   useEffect(() => {
     if (isLoaded && !isSignedIn) {
@@ -56,25 +58,6 @@ function RootLayoutNav() {
       CreateUserBackend();
     }
   }, [isLoaded, isSignedIn]);
-
-
-  useEffect(() => {
-    const subscription = Notifications.addNotificationReceivedListener(notification => {
-
-    });
-
-    const responseSubscription = Notifications.addNotificationResponseReceivedListener(response => {
-      const { data } = response.notification.request.content;
-      if (data && data.chatId) {
-        router.push(`/(pages)/menssagens/${data.chatId}`);
-      }
-    });
-
-    return () => {
-      subscription.remove();
-      responseSubscription.remove();
-    };
-  }, [router]);
 
 
   return (

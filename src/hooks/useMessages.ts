@@ -37,11 +37,10 @@ export function useMessages(chatId: string, userId: string) {
         setLoading(false);
       }
     }
-
     fetchMessages();
   }, [userId]);
 
-  const sendMessage = (content: string) => {
+  const sendMessage = (content: string, imageUrl?: string[] | null) => {
     const newMessage: Mensagens = {
       id: Date.now().toString(),
       sender_id: chatId,
@@ -51,9 +50,8 @@ export function useMessages(chatId: string, userId: string) {
       status: "send",
       contact_name: "",
       contact_phone: "",
-      images: [],
+      images: imageUrl ? [...imageUrl] : []
     };
-
     socket.emit("send_message", newMessage);
   };
 

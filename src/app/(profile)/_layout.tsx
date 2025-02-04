@@ -71,13 +71,14 @@ export default function LayoutProfile() {
             ),
             headerRight: () => (
               <View>
-                <TouchableOpacity onPress={() => router.replace('/updateProfile')}>
+                <TouchableOpacity onPress={() => router.push('/updateProfile')}>
                   <MaterialCommunityIcons name="pencil" size={20} color={colors.text} />
                 </TouchableOpacity>
               </View>
             ),
           }}
         ></Stack.Screen>
+        <Stack.Screen name="updateProfile" options={{ headerTitle: "Atualizar Perfil" }} />
       </Stack>
     </>
   )

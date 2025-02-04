@@ -17,12 +17,10 @@ export default function SignUp() {
 
   const handleSendVerification = async () => {
     if (!isLoaded) return
-
     try {
       await signUp.create({
         phoneNumber,
       })
-
       await signUp.preparePhoneNumberVerification()
       setPendingVerification(true)
       Alert.alert("Sucesso", "Código de verificação enviado para o seu telefone.")
@@ -35,7 +33,6 @@ export default function SignUp() {
   const handleVerifyCode = async () => {
     if (!isLoaded) return;
     setLoader(true);
-
     try {
       const completeSignUp = await signUp.attemptPhoneNumberVerification({
         code: verificationCode,
@@ -45,13 +42,9 @@ export default function SignUp() {
         Alert.alert("Erro", "Falha na verificação. Tente novamente.");
         return;
       }
-
       await setActive({ session: completeSignUp.createdSessionId });
-
       const clerkId = completeSignUp.createdUserId;
-
       const phoneNumberFormatted = parsePhoneNumber(phoneNumber, "BR")?.format("E.164");
-
       if (!phoneNumberFormatted) {
         Alert.alert("Erro", "Número de telefone inválido.");
         return;
@@ -83,8 +76,6 @@ export default function SignUp() {
       setLoader(false);
     }
   };
-
-
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>

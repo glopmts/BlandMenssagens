@@ -7,7 +7,6 @@ const ProfileScreen = () => {
   const { user } = useUser();
   const { colors } = useTheme()
   const userId = user?.id || '';
-
   const { isLoader, userData } = UserData({ userId })
 
   if (isLoader) {

@@ -3,19 +3,21 @@ import * as Contacts from "expo-contacts"
 import { useEffect } from "react"
 import { ActivityIndicator, Alert, AppState, View } from "react-native"
 
-import { requestNotificationPermission, useRegisterPushToken } from "@/components/GetTokensNotifications"
+import { requestNotificationPermission } from "@/components/GetTokensNotifications"
 import ContactsScreen from "@/components/ListContacts"
 import MenssagensList from "@/components/ListMenssagens"
 import { useTheme } from "@/hooks/useTheme"
 import { updateUserOnlineStatus } from "@/utils/userStatus"
 
+import { NotificationManager } from "@/components/NotificationManager"
 import { stylesHome } from "./stylesHome"
 
 export default function TabOneScreen() {
   const { colors } = useTheme()
   const { isLoaded, user } = useUser()
+  const userId = user?.id || ''
 
-  useRegisterPushToken(user?.id!)
+  NotificationManager({ userId: userId! })
 
   useEffect(() => {
     const getContacts = async () => {

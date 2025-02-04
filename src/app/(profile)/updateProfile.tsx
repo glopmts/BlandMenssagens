@@ -1,4 +1,5 @@
 import { useTheme } from "@/hooks/useTheme";
+import { deleteOldImage } from "@/types/deleteImagemFirebase";
 import { storage } from "@/utils/firebase";
 import { url } from "@/utils/url-api";
 import { useClerk } from "@clerk/clerk-expo";
@@ -7,7 +8,8 @@ import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { useCallback, useEffect, useState } from "react";
-import { Alert, Image, Platform, StyleSheet, Text, TextInput, ToastAndroid, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Alert, Image, Text, TextInput, ToastAndroid, TouchableOpacity, View } from "react-native";
+import { stylesUpdateProfile } from "./styles/stylesUploadProfile";
 
 export default function UpdateProfile() {
   const { colors } = useTheme();
@@ -15,14 +17,16 @@ export default function UpdateProfile() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [isLoaded, setIsLoaded] = useState(false);
+  const [Loaded, setLoaded] = useState(true);
+  const [uploadLoad, setUpload] = useState(false);
   const [error, setError] = useState("");
+  const [userData, setUserData] = useState<any>(null);
   const { user } = useClerk();
   const userId = user?.id;
   const router = useRouter();
 
   const fetchData = useCallback(async () => {
     if (!userId) return;
-
     try {
       const response = await fetch(`${url}/api/user/${userId}`);
       if (!response.ok) {
@@ -33,8 +37,11 @@ export default function UpdateProfile() {
       setImage(userData.imageurl);
       setEmail(userData.email);
 
+      setUserData(userData);
     } catch (error) {
       Alert.alert("Error", "Failed to fetch user data");
+    } finally {
+      setLoaded(false)
     }
   }, [userId]);
 
@@ -61,6 +68,7 @@ export default function UpdateProfile() {
   };
 
   const uploadImage = async (uri: string) => {
+    setUpload(true);
     try {
       const response = await fetch(uri);
       const blob = await response.blob();
@@ -71,6 +79,8 @@ export default function UpdateProfile() {
     } catch (error) {
       console.error("Erro ao fazer upload da imagem:", error);
       throw error;
+    } finally {
+      setUpload(false);
     }
   };
 
@@ -78,11 +88,12 @@ export default function UpdateProfile() {
     setIsLoaded(true);
     try {
       let imageUrl: string | null = null;
-
       if (image) {
+        if (userData.imageurl) {
+          await deleteOldImage(userData.imageurl);
+        }
         imageUrl = await uploadImage(image);
       }
-
       const res = await fetch(`${url}/api/user/update`, {
         method: 'PUT',
         headers: {
@@ -110,97 +121,52 @@ export default function UpdateProfile() {
     }
   };
 
+  if (Loaded) {
+    return (
+      <View style={[stylesUpdateProfile.container, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size={28} color={colors.text} />
+      </View>
+    )
+  }
+
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <Text style={[styles.title, { color: colors.text }]}>Atualize seu perfil!</Text>
-      {error && <Text style={[styles.error, { color: colors.error }]}>{error}</Text>}
-      <TouchableOpacity style={styles.imageContainer} onPress={pickImage}>
-        {image ? (
-          <Image source={{ uri: image }} style={styles.image} />
-        ) : (
-          <View style={[styles.placeholderImage, { backgroundColor: colors.borderColor }]}>
-            <Text style={[styles.placeholderText, { color: colors.text }]}>Selecionar Imagem</Text>
+    <View style={[stylesUpdateProfile.container, { backgroundColor: colors.background }]}>
+      <Text style={[stylesUpdateProfile.title, { color: colors.text }]}>Atualize seu perfil!</Text>
+      {error && <Text style={[stylesUpdateProfile.error, { color: colors.error }]}>{error}</Text>}
+      <TouchableOpacity style={stylesUpdateProfile.imageContainer} onPress={pickImage}>
+        {uploadLoad ? (
+          <View style={stylesUpdateProfile.uploadLoader}>
+            <ActivityIndicator size={28} color={colors.text} />
           </View>
+        ) : (
+          image ? (
+            <Image source={{ uri: image }} style={stylesUpdateProfile.image} />
+          ) : (
+            <View style={[stylesUpdateProfile.placeholderImage, { backgroundColor: colors.borderColor }]}>
+              <Text style={[stylesUpdateProfile.placeholderText, { color: colors.text }]}>Selecionar Imagem</Text>
+            </View>
+          )
         )}
       </TouchableOpacity>
-
       <TextInput
-        style={[styles.input, { color: colors.text, borderColor: colors.borderColor }]}
+        style={[stylesUpdateProfile.input, { color: colors.text, borderColor: colors.borderColor }]}
         placeholder="Seu nome"
         placeholderTextColor={'#999999'}
         value={name}
         onChangeText={setName}
       />
       <TextInput
-        style={[styles.input, { color: colors.text, borderColor: colors.borderColor }]}
+        style={[stylesUpdateProfile.input, { color: colors.text, borderColor: colors.borderColor }]}
         placeholder="Email"
         placeholderTextColor={'#999999'}
         value={email}
         onChangeText={setEmail}
       />
-
-      <TouchableOpacity style={[styles.button, { backgroundColor: colors.primary }]} onPress={handleSave}>
-        <Text style={[styles.buttonText, { color: colors.buttonText }]}>
+      <TouchableOpacity style={[stylesUpdateProfile.button, { backgroundColor: colors.primary }]} onPress={handleSave}>
+        <Text style={[stylesUpdateProfile.buttonText, { color: colors.buttonText }]}>
           {isLoaded ? "Atualizando..." : "Atualizar Perfil"}
         </Text>
       </TouchableOpacity>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingHorizontal: 20,
-    paddingVertical: 20,
-    paddingTop: Platform.OS === "ios" ? 60 : 80,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: "bold",
-    textAlign: "center",
-    marginBottom: 30,
-  },
-  imageContainer: {
-    alignItems: "center",
-    marginBottom: 20,
-  },
-  image: {
-    width: 150,
-    height: 150,
-    borderRadius: 75,
-  },
-  placeholderImage: {
-    width: 150,
-    height: 150,
-    borderRadius: 75,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  placeholderText: {
-    textAlign: "center",
-  },
-  input: {
-    height: 50,
-    borderWidth: 1,
-    borderRadius: 5,
-    paddingHorizontal: 10,
-    marginBottom: 20,
-    fontSize: 16,
-  },
-  button: {
-    height: 50,
-    borderRadius: 16,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  buttonText: {
-    fontSize: 18,
-    fontWeight: "bold",
-  },
-  error: {
-    marginTop: 10,
-    fontSize: 14,
-    textAlign: "center",
-  }
-});
