@@ -68,7 +68,9 @@
     "socket.io-client": "^4.8.1",
     "uuid": "^11.0.5",
     "ws": "^8.18.0",
-    "expo-device": "~7.0.2"
+    "expo-device": "~7.0.2",
+    "expo-file-system": "~18.0.9",
+    "expo-media-library": "~17.0.5"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

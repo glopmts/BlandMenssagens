@@ -1,7 +1,9 @@
+import { MessageItem } from "@/components/MessagensRenderChat"
 import { useMessages } from "@/hooks/useMessages"
 import { useTheme } from "@/hooks/useTheme"
 import type { Mensagens } from "@/types/interfaces"
 import { storage } from "@/utils/firebase"
+import { downloadImage } from "@/utils/saveImagesUrl"
 import { useClerk } from "@clerk/clerk-expo"
 import { Ionicons } from "@expo/vector-icons"
 import * as Clipboard from "expo-clipboard"
@@ -9,7 +11,7 @@ import { Image } from "expo-image"
 import * as ImagePicker from "expo-image-picker"
 import { useLocalSearchParams } from "expo-router"
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage"
-import { useRef, useState } from "react"
+import React, { useRef, useState } from "react"
 import {
   ActivityIndicator,
   FlatList,
@@ -18,40 +20,28 @@ import {
   TextInput,
   ToastAndroid,
   TouchableOpacity,
-  View,
+  View
 } from "react-native"
 import { stylesChat } from "../styles/stylesChat"
+
+
 
 export default function MensagensPageRender() {
   const { user } = useClerk()
   const { id } = useLocalSearchParams<{ id: string }>()
   const { colors } = useTheme()
-  const { messages, loading, sendMessage } = useMessages(user?.id || "", id)
+  const { messages, loading, sendMessage, handleDeleteMessage } = useMessages(user?.id || "", id)
   const [newMessage, setNewMessage] = useState("")
   const [imageUrl, setImageUrl] = useState<string[] | null>(null)
   const [isUploading, setIsUploading] = useState(false)
   const flatListRef = useRef<FlatList>(null)
 
-  const handleCopy = async (text: string) => {
+  const handleCopy = async (text: string, id: string) => {
     try {
       await Clipboard.setStringAsync(text)
       ToastAndroid.show("Mensagem copiada!", ToastAndroid.SHORT)
     } catch (error) {
       console.error("Erro ao copiar para a área de transferência:", error)
-    }
-  }
-
-  const renderImages = (images: string[]) => {
-    if (images.length === 1) {
-      return <Image source={{ uri: images[0] }} style={stylesChat.image} />
-    } else {
-      return (
-        <View style={stylesChat.imageGrid}>
-          {images.map((image, index) => (
-            <Image key={index} source={{ uri: image }} style={stylesChat.smallImage} />
-          ))}
-        </View>
-      )
     }
   }
 
@@ -100,37 +90,15 @@ export default function MensagensPageRender() {
   }
 
   const renderMessage = ({ item }: { item: Mensagens }) => (
-    <TouchableOpacity
-      onLongPress={() => handleCopy(item.content)}
-      delayLongPress={300}
-      style={[
-        stylesChat.messageContainer,
-        item.sender_id === user?.id ? stylesChat.sentMessage : stylesChat.receivedMessage,
-      ]}
-    >
-      {item.images && item.images.length > 0 && <View style={stylesChat.ImagesChat}>{renderImages(item.images)}</View>}
-      <View
-        style={[
-          stylesChat.messageBubble,
-          {
-            backgroundColor: item.sender_id === user?.id ? colors.primary : colors.card,
-          },
-        ]}
-      >
-        <Text style={[stylesChat.messageText, { color: item.sender_id === user?.id ? "#fff" : colors.text }]}>
-          {item.content}
-        </Text>
-        <Text
-          style={[
-            stylesChat.timeText,
-            { color: item.sender_id === user?.id ? "rgba(255, 255, 255, 0.7)" : colors.text },
-          ]}
-        >
-          {new Date(item.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-        </Text>
-      </View>
-    </TouchableOpacity>
-  )
+    <MessageItem
+      item={item}
+      user={user}
+      colors={colors}
+      handleCopy={handleCopy}
+      downloadImage={downloadImage}
+      deleteMessage={handleDeleteMessage}
+    />
+  );
 
   if (loading) {
     return (
@@ -164,7 +132,9 @@ export default function MensagensPageRender() {
       />
       {imageUrl && imageUrl.length > 0 && (
         <View style={stylesChat.imagePreviewContainer}>
-          {renderImages(imageUrl)}
+          {imageUrl.map((url, index) => (
+            <Image key={index} source={{ uri: url }} style={stylesChat.imagePreview} />
+          ))}
           <TouchableOpacity onPress={() => setImageUrl(null)} style={stylesChat.removeImageButton}>
             <Ionicons name="close-circle" size={24} color="#fff" />
           </TouchableOpacity>
@@ -215,4 +185,3 @@ export default function MensagensPageRender() {
     </View>
   )
 }
-

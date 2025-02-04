@@ -129,4 +129,17 @@ export const stylesChat = StyleSheet.create({
     borderRadius: 8,
     margin: 1,
   },
+
+  optionsButton: {
+    position: "absolute",
+    top: 3,
+    right: -1,
+    zIndex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    borderRadius: 16,
+    padding: 8,
+    flexDirection: 'row',
+    gap: 20,
+    width: "auto"
+  }
 })

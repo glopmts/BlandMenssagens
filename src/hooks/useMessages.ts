@@ -40,6 +40,10 @@ export function useMessages(chatId: string, userId: string) {
     fetchMessages();
   }, [userId]);
 
+  const handleDeleteMessage = (messageId: string) => {
+
+  }
+
   const sendMessage = (content: string, imageUrl?: string[] | null) => {
     const newMessage: Mensagens = {
       id: Date.now().toString(),
@@ -55,5 +59,5 @@ export function useMessages(chatId: string, userId: string) {
     socket.emit("send_message", newMessage);
   };
 
-  return { messages, loading, sendMessage };
+  return { messages, loading, sendMessage, handleDeleteMessage };
 }
