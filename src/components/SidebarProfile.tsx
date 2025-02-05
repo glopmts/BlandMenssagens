@@ -1,4 +1,6 @@
 import { useTheme } from "@/hooks/useTheme";
+import { User } from "@/types/interfaces";
+import { url } from "@/utils/url-api";
 import { useClerk } from "@clerk/clerk-expo";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -13,75 +15,93 @@ interface SidebarProps {
   name?: string;
 }
 
+interface Account {
+  sessionId: string;
+  user: {
+    id: string;
+    email: string;
+    userId: string;
+  };
+}
+
 const Sidebar = ({ heightAnim, imageurl, name }: SidebarProps) => {
   const { colors } = useTheme();
   const { setActive } = useClerk();
-  const [accounts, setAccounts] = useState<any[]>([]);
+  const [accounts, setAccounts] = useState<Account[]>([]);
+  const [dataUser, setDataUser] = useState<User | null>(null);
 
   useEffect(() => {
     const loadAccounts = async () => {
       const storedAccounts = await AsyncStorage.getItem("logged_accounts");
       if (storedAccounts) {
-        setAccounts(JSON.parse(storedAccounts));
+        try {
+          const parsedAccounts: Account[] = JSON.parse(storedAccounts);
+          const uniqueAccounts = parsedAccounts.filter(
+            (account, index, self) =>
+              index === self.findIndex((a) => a.user.email === account.user.email)
+          );
+
+          setAccounts(uniqueAccounts);
+          await AsyncStorage.setItem("logged_accounts", JSON.stringify(uniqueAccounts));
+        } catch (error) {
+          console.error("Erro ao carregar contas:", error);
+        }
       }
     };
+
     loadAccounts();
   }, []);
 
   const switchAccount = async (sessionId: string) => {
     try {
       await setActive({ session: sessionId });
+
+      const activeAccount = accounts.find(account => account.sessionId === sessionId);
+      if (activeAccount?.user.userId) {
+        const response = await fetch(`${url}/api/user/${activeAccount.user.userId}`);
+        const data: User = await response.json();
+        setDataUser(data);
+      }
+
       router.push("/(drawer)/(tabs)");
     } catch (err) {
-      await AsyncStorage.removeItem("logged_accounts");
       Alert.alert("Erro", "Falha ao alternar contas.");
     }
   };
 
 
-  const logoutAccount = async (sessionId: string) => {
-    const storedAccounts = await AsyncStorage.getItem("logged_accounts");
-    if (storedAccounts) {
-      const parsedAccounts = JSON.parse(storedAccounts);
-      const updatedAccounts = parsedAccounts.filter((account: any) => account.sessionId !== sessionId);
-      await AsyncStorage.setItem("logged_accounts", JSON.stringify(updatedAccounts));
-      setAccounts(updatedAccounts);
+  const deleteAccount = async (sessionId: string) => {
+    try {
+      const storedAccounts = await AsyncStorage.getItem("logged_accounts");
+      if (storedAccounts) {
+        let parsedAccounts: Account[] = JSON.parse(storedAccounts);
+        const updatedAccounts = parsedAccounts.filter(account => account.sessionId !== sessionId);
+        await AsyncStorage.setItem("logged_accounts", JSON.stringify(updatedAccounts));
+        setAccounts(updatedAccounts);
+        Alert.alert("Conta removida com sucesso!");
+      }
+    } catch (error) {
+      console.error("Erro ao deletar conta:", error);
+      Alert.alert("Erro", "Não foi possível deletar a conta.");
     }
   };
+
 
   return (
     <View style={[styles.container, { backgroundColor: colors.backgroundColorHeaderLinks, borderBottomColor: colors.borderColor }]}>
       <Animated.View style={[styles.subMenu, { height: heightAnim }]}>
         <View style={styles.inforCount}>
           {imageurl ? (
-            <Image
-              style={{ width: 40, height: 40, borderRadius: 30 }}
-              source={{ uri: imageurl }}
-            />
+            <Image style={{ width: 40, height: 40, borderRadius: 30 }} source={{ uri: imageurl }} />
           ) : (
-            <View
-              style={[styles.noImage, {
-                backgroundColor: colors.background
-              }]}
-            />
+            <View style={[styles.noImage, { backgroundColor: colors.background }]} />
           )}
           <View>
             <Text style={[styles.nameInfor, { color: colors.text }]}>{name}</Text>
           </View>
         </View>
-        {accounts.map((account, index) => (
-          <View key={index} style={styles.accountItem}>
-            <TouchableOpacity style={styles.subMenuItem} onPress={() => switchAccount(account.sessionId)}>
-              <Ionicons name="person" color={colors.text} size={24} />
-              <Text style={[styles.subMenuText, { color: colors.text }]}>{account.user.phoneNumber}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => logoutAccount(account.sessionId)}>
-              <Ionicons name="log-out" color={colors.text} size={24} />
-            </TouchableOpacity>
-          </View>
-        ))}
       </Animated.View>
-      <TouchableOpacity style={styles.subMenuItem} onPress={() => router.push("/(auth)/add-count")}>
+      <TouchableOpacity style={styles.subMenuItem}>
         <Ionicons name="add" color={colors.text} size={24} />
         <Text style={[styles.subMenuText, { color: colors.text }]}>Adicionar Conta</Text>
       </TouchableOpacity>

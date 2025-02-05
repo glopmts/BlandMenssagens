@@ -11,7 +11,7 @@ export default function ContactsScreen() {
   const { colors } = useTheme()
   const router = useRouter()
   const userId = user?.id || ''
-  const { contacts, error, isLoading, loadContacts, onRefresh, refreshing } = ContactsListUser({ userId })
+  const { contacts, error, isLoading, onRefresh, refreshing } = ContactsListUser({ userId })
 
   const ContactListItem = ({ item, colors, router }: any) => {
     const lastSeenText = item?.lastOnline
@@ -77,7 +77,7 @@ export default function ContactsScreen() {
         }
       />
       <View style={{ justifyContent: 'center', alignContent: 'center', flex: 1 }}>
-        {contacts.filter.length > 0 && (
+        {contacts.length === 0 && (
           <Text style={{ textAlign: 'center', color: colors.text, fontSize: 20, fontWeight: "800" }}>Sem contatos</Text>
         )}
       </View>

@@ -2,6 +2,7 @@ import { MessageItem } from "@/components/MessagensRenderChat"
 import NoAddContact from "@/components/NoContactAdd"
 import { useMessages } from "@/hooks/useMessages"
 import { useTheme } from "@/hooks/useTheme"
+import { deleteOldImage } from "@/types/deleteImagemFirebase"
 import type { Mensagens } from "@/types/interfaces"
 import { storage } from "@/utils/firebase"
 import { downloadImage } from "@/utils/saveImagesUrl"
@@ -71,7 +72,6 @@ export default function MensagensPageRender() {
             return getDownloadURL(storageRef)
           }),
         )
-
         setImageUrl(uploadedUrls)
       } catch (error) {
         console.error("Error uploading images:", error)
@@ -102,6 +102,20 @@ export default function MensagensPageRender() {
     }
     fetchData();
   }, [contactId])
+
+  const closeImage = async () => {
+    try {
+      await Promise.all(imageUrl.map((url) => deleteOldImage(url)));
+
+      setImageUrl([]);
+      setLegendImage("");
+      ToastAndroid.show("Imagem removida!", ToastAndroid.SHORT);
+    } catch (error) {
+      console.error("Erro ao excluir imagem:", error);
+      ToastAndroid.show("Erro ao remover imagem", ToastAndroid.SHORT);
+    }
+  };
+
 
   if (loading) {
     return (
@@ -135,7 +149,7 @@ export default function MensagensPageRender() {
           e ficam somente entre você e os participantes desta conversa.
         </Text>
         <View>
-          <NoAddContact number={phoneNumber!} contactId={contactId!} userId={user?.id!} />
+          <NoAddContact number={phoneNumber!} contactId={id!} userId={user?.id!} />
         </View>
       </View>
       <FlatList
@@ -152,36 +166,58 @@ export default function MensagensPageRender() {
           {imageUrl.map((url, index) => (
             <Image key={index} source={{ uri: url }} style={stylesChat.imagePreview} />
           ))}
-          <TouchableOpacity onPress={() => setImageUrl([])} style={stylesChat.removeImageButton}>
+          <TouchableOpacity onPress={closeImage} style={stylesChat.removeImageButton}>
             <Ionicons name="close-circle" size={24} color="#fff" />
           </TouchableOpacity>
         </View>
       )}
       <View style={[stylesChat.inputContainer, { borderTopColor: colors.borderColor }]}>
-        <TextInput
-          style={[
-            stylesChat.input,
-            {
-              backgroundColor: colors.card,
-              color: colors.text,
-              borderColor: colors.borderColor,
-              borderWidth: 1,
-            },
-          ]}
-          value={newMessage}
-          onChangeText={setNewMessage}
-          placeholder="Type a message..."
-          placeholderTextColor={colors.PlaceholderTextColor}
-          multiline={true}
-          scrollEnabled={true}
-          textAlignVertical="center"
-        />
-
+        <View style={{ flex: 1 }}>
+          {imageUrl.length > 0 ? (
+            <TextInput
+              style={[
+                stylesChat.input,
+                {
+                  backgroundColor: colors.card,
+                  color: colors.text,
+                  borderColor: colors.borderColor,
+                  borderWidth: 1,
+                },
+              ]}
+              value={legendImage}
+              onChangeText={setLegendImage}
+              placeholder="Legenda imagem.."
+              placeholderTextColor={colors.PlaceholderTextColor}
+              multiline={true}
+              scrollEnabled={true}
+              textAlignVertical="center"
+            />
+          ) : (
+            <TextInput
+              style={[
+                stylesChat.input,
+                {
+                  backgroundColor: colors.card,
+                  color: colors.text,
+                  borderColor: colors.borderColor,
+                  borderWidth: 1,
+                },
+              ]}
+              value={newMessage}
+              onChangeText={setNewMessage}
+              placeholder={'Nova mensagem...'}
+              placeholderTextColor={colors.PlaceholderTextColor}
+              multiline={true}
+              scrollEnabled={true}
+              textAlignVertical="center"
+            />
+          )}
+        </View>
         {isUploading ? (
           <ActivityIndicator size={24} color={colors.primary} style={{ marginLeft: 12 }} />
         ) : (
           <>
-            {newMessage.trim() || imageUrl ? (
+            {newMessage.trim() || imageUrl.length > 0 ? (
               <TouchableOpacity
                 style={[stylesChat.sendButton, { backgroundColor: colors.primary }]}
                 onPress={handleSend}

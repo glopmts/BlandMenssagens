@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   View
 } from "react-native"
+import FullScreenImage from "./FullScreenImagem"
 
 
 export const MessageItem = React.memo(({ item, user, colors, handleCopy, downloadImage, deleteMessage }: MessageProperties) => {
@@ -19,7 +20,7 @@ export const MessageItem = React.memo(({ item, user, colors, handleCopy, downloa
       <View style={stylesChat.ImagesChat}>
         {images.length === 1 ? (
           <View style={stylesChat.imageContainer}>
-            <Image source={{ uri: images[0] }} style={stylesChat.image} />
+            <FullScreenImage imageUrl={images[0]} />
             {!item.legendImage && (
               <Text style={[stylesChat.imageTime, { color: colors.text }]}>{messageTime}</Text>
             )}

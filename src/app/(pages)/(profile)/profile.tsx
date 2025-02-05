@@ -12,7 +12,7 @@ const ProfileScreen = () => {
   if (isLoader) {
     return (
       <View style={[styles.container, { backgroundColor: colors.background }]}>
-        <ActivityIndicator size={18} color={colors.text} />
+        <ActivityIndicator size={26} color={colors.text} />
       </View>
     );
   }

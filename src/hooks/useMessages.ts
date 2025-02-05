@@ -33,7 +33,7 @@ export function useMessages(chatId: string, userId: string) {
         const data = await res.json();
         const filteredMessages = data.map((msg: Mensagens) => ({
           ...msg,
-          content: msg.is_deleted ? "Mensagem apagada" : msg.content,
+          content: msg.is_deleted ? "" : msg.content,
         }));
 
         setMessages(filteredMessages);
@@ -119,8 +119,6 @@ export function useMessages(chatId: string, userId: string) {
       content,
       created_at: new Date().toISOString(),
       status: "send",
-      contact_name: "",
-      contact_phone: "",
       legendImage: legendImage,
       is_deleted: false,
       images: imageUrl

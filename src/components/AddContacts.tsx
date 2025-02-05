@@ -47,8 +47,9 @@ export default function AddContacts({ number }: AddContactsProps) {
       })
 
       if (!res.ok) {
-        Alert.alert("Failed to add contact!")
-        throw new Error("Não foi possível adicionar o contato");
+        const errorData = await res.json();
+        Alert.alert("Erro", errorData.message || "Erro desconhecido");
+        throw new Error(errorData.message || "Erro desconhecido");
       }
 
       ToastAndroid.show("Contato criado com sucesso", ToastAndroid.SHORT);

@@ -29,8 +29,6 @@ export interface Mensagens {
   content: string
   legendImage?: string,
   created_at: string
-  contact_name: string
-  contact_phone: string
   is_deleted: boolean
   contact_image?: string | null;
   images: string[]

@@ -36,7 +36,6 @@ export default function MensagensLayout() {
           throw new Error(`Error fetching user data: ${res.status}`)
         }
         const userData = await res.json()
-        console.log(userData)
         setName(userData.name)
         setPhone(userData.phone)
         setImage(userData.imageurl)

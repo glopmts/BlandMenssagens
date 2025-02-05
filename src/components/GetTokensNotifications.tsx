@@ -42,11 +42,7 @@ export const useRegisterPushToken = (userId: string) => {
           console.log('Permissão de notificação negada!');
           return;
         }
-
         const pushToken = (await Notifications.getExpoPushTokenAsync()).data;
-
-        console.log('Novo Push Token:', pushToken);
-
         const res = await fetch(`${url}/api/user/pushtoken`, {
           method: 'POST',
           headers: {

@@ -1,98 +1,79 @@
 import { useTheme } from "@/hooks/useTheme"
 import { useSignIn } from "@clerk/clerk-expo"
-import { Link, useRouter } from "expo-router"
+import { Link, router } from "expo-router"
 import { useState } from "react"
 import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native"
 
-export default function Page() {
-  const { signIn, setActive, isLoaded } = useSignIn()
-  const router = useRouter()
-  const { theme, colors } = useTheme()
-  const [phoneNumber, setPhoneNumber] = useState("")
-  const [verificationCode, setVerificationCode] = useState("")
-  const [otpSent, setOtpSent] = useState(false)
+export default function LoginScreen() {
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const { signIn, setActive } = useSignIn()
+  const { colors } = useTheme()
 
-  const handleSendOTP = async () => {
-    if (!isLoaded) return;
+  const onLogin = async () => {
     try {
-      await signIn.create({
-        identifier: phoneNumber,
-        strategy: "phone_code",
-      });
-      setOtpSent(true);
-      Alert.alert("Sucesso", "Código de verificação enviado para o seu telefone.");
-    } catch (err: any) {
-      console.log("Erro de autenticação:", err);
-      Alert.alert("Erro", err.errors[0]?.message || "Erro desconhecido.");
-    }
-  };
+      const result = await signIn?.create({
+        identifier: email,
+        password,
+      })
 
-
-  const handleVerifyOTP = async () => {
-    if (!isLoaded) return;
-    try {
-      const completeSignIn = await signIn.attemptFirstFactor({
-        strategy: "phone_code",
-        code: verificationCode,
-      });
-
-      if (completeSignIn.status === "complete") {
-        await setActive({ session: completeSignIn.createdSessionId });
-        router.push("/(drawer)/(tabs)");
+      if (result?.status === "complete") {
+        if (setActive) {
+          await setActive({ session: result.createdSessionId })
+          Alert.alert("Login efetuado com sucesso!")
+          router.push("/(drawer)/(tabs)")
+        }
       } else {
-        Alert.alert("Erro", "Falha na verificação. Tente novamente.");
+        console.error("Error:", result)
+        Alert.alert("Erro", "Falha no login. Por favor, verifique seu email e senha.")
       }
     } catch (err: any) {
-      Alert.alert("Erro", err.errors[0]?.message || "Erro desconhecido.");
+      console.error("Error:", err.message)
+      Alert.alert("Erro", err.message || "Não foi possível fazer login.")
     }
-  };
+  }
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.formContainer}>
-        <Text style={[styles.title, { color: colors.text }]}>
-          {otpSent ? "Digite o código de verificação" : "Entre com seu número de telefone"}
-        </Text>
+        <Text style={[styles.title, { color: colors.text }]}>Entre com seu email</Text>
         <View style={styles.inputs}>
-          {!otpSent ? (
-            <TextInput
-              style={[styles.input, { color: colors.text, borderColor: colors.borderColor }]}
-              placeholder="Número de telefone"
-              placeholderTextColor={colors.text}
-              value={phoneNumber}
-              onChangeText={setPhoneNumber}
-              keyboardType="phone-pad"
-              textContentType="telephoneNumber"
-            />
-          ) : (
-            <TextInput
-              style={[styles.input, { color: colors.text, borderColor: colors.borderColor }]}
-              placeholder="Código de verificação"
-              placeholderTextColor={colors.text}
-              value={verificationCode}
-              onChangeText={setVerificationCode}
-              keyboardType="number-pad"
-            />
-          )}
+          <TextInput
+            style={[styles.input, { color: colors.text, borderColor: colors.borderColor }]}
+            placeholder="Email"
+            placeholderTextColor={colors.gray}
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            textContentType="emailAddress"
+            autoCapitalize="none"
+          />
+          <TextInput
+            style={[styles.input, { color: colors.text, borderColor: colors.borderColor }]}
+            placeholder="Senha"
+            placeholderTextColor={colors.gray}
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+            textContentType="password"
+          />
         </View>
-        <TouchableOpacity
-          style={[styles.button, { backgroundColor: colors.primary }]}
-          onPress={otpSent ? handleVerifyOTP : handleSendOTP}
-        >
-          <Text style={[styles.buttonText, { color: colors.buttonText }]}>
-            {otpSent ? "Verificar" : "Enviar código"}
-          </Text>
+        <TouchableOpacity style={[styles.button, { backgroundColor: colors.primary }]} onPress={onLogin}>
+          <Text style={[styles.buttonText, { color: colors.buttonText }]}>Login</Text>
         </TouchableOpacity>
       </View>
       <View style={styles.bottomContainer}>
         <Text style={[styles.text, { color: colors.text }]}>
-          Não tem uma conta? {" "}
-          <Link href="/(auth)/sign-up" style={[styles.link, { color: colors.primary }]}>Cadrasta-se</Link>
+          Não tem uma conta?{" "}
+          <Link href="/(auth)/sign-up" style={[styles.link, { color: colors.primary }]}>
+            Cadastre-se
+          </Link>
         </Text>
       </View>
     </View>
   )
 }
+
 
 const styles = StyleSheet.create({
   container: {
@@ -106,7 +87,7 @@ const styles = StyleSheet.create({
     maxWidth: 400,
   },
   title: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: "bold",
     marginBottom: 20,
     textAlign: "center",
@@ -117,14 +98,14 @@ const styles = StyleSheet.create({
   input: {
     height: 50,
     borderWidth: 1,
-    borderRadius: 5,
-    paddingHorizontal: 10,
-    marginBottom: 10,
+    borderRadius: 10,
+    paddingHorizontal: 15,
+    marginBottom: 15,
     fontSize: 16,
   },
   button: {
     height: 50,
-    borderRadius: 16,
+    borderRadius: 25,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -134,8 +115,7 @@ const styles = StyleSheet.create({
     fontFamily: "Helvetica",
   },
   bottomContainer: {
-    marginTop: 20,
-    marginBottom: 20,
+    marginTop: 30,
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
@@ -144,8 +124,8 @@ const styles = StyleSheet.create({
     textDecorationLine: "underline",
   },
   text: {
-    fontSize: 14,
-    color: "#666",
+    fontSize: 16,
     textAlign: "center",
-  }
+  },
 })
+

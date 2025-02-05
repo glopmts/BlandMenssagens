@@ -51,32 +51,28 @@ export default function NewsUserUpdateProfile() {
   };
 
   const handleSave = async () => {
-    if (!name || !email) {
+    if (!name) {
       setError("Todos os campos devem ser preenchidos!");
       return;
     }
 
     setIsLoaded(true);
-
     try {
       let imageUrl: string | null = null;
-
       if (image) {
         imageUrl = await uploadImage(image);
       }
-
-      const res = await fetch(`${url}/user/update`, {
+      const res = await fetch(`${url}/api/user/update`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+          userId: user?.id,
           name,
-          email,
           imageurl: imageUrl,
         }),
       })
-
       if (!res.ok) {
         Alert.alert("Error updating profile!")
         throw new Error('Falha ao atualizar o usuário!');
@@ -113,14 +109,6 @@ export default function NewsUserUpdateProfile() {
         value={name}
         onChangeText={setName}
       />
-      <TextInput
-        style={[styles.input, { color: colors.text, borderColor: colors.borderColor }]}
-        placeholder="Email"
-        placeholderTextColor={'#999999'}
-        value={email}
-        onChangeText={setEmail}
-      />
-
       <TouchableOpacity style={[styles.button, { backgroundColor: colors.primary }]} onPress={handleSave}>
         <Text style={[styles.buttonText, { color: colors.buttonText }]}>
           {isLoaded ? "Atualizando..." : "Atualizar Perfil"}

@@ -1,8 +1,8 @@
-import { useAuth, useUser } from "@clerk/clerk-expo"
+import { useUser } from "@clerk/clerk-expo"
 import { useEffect } from "react"
 import { ActivityIndicator, Alert, AppState, View } from "react-native"
 
-import { requestNotificationPermission } from "@/components/GetTokensNotifications"
+import { requestNotificationPermission, useRegisterPushToken } from "@/components/GetTokensNotifications"
 import ContactsScreen from "@/components/ListContacts"
 import MenssagensList from "@/components/ListMenssagens"
 import { useTheme } from "@/hooks/useTheme"
@@ -14,7 +14,7 @@ export default function TabOneScreen() {
   const { colors } = useTheme()
   const { isLoaded, user } = useUser()
   const userId = user?.id || ''
-  const { signOut } = useAuth();
+  useRegisterPushToken(userId)
 
   useEffect(() => {
     const checkPermissions = async () => {
@@ -55,10 +55,6 @@ export default function TabOneScreen() {
       updateUserOnlineStatus(user?.id, false);
     };
   }, [user]);
-
-  const signOutUser = async () => {
-    await signOut()
-  }
 
   if (!isLoaded) {
     return (

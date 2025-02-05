@@ -1,46 +1,36 @@
 import { useTheme } from "@/hooks/useTheme";
-import { useAuth, useClerk, useSignIn } from "@clerk/clerk-expo";
+import { useAuth, useClerk, useSignIn, useUser } from "@clerk/clerk-expo";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Link, useRouter } from "expo-router";
 import { useState } from "react";
-import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 
 export default function AddCount() {
   const { signIn, isLoaded } = useSignIn();
   const { signOut } = useAuth();
+  const { user } = useUser();
   const router = useRouter();
   const { theme, colors } = useTheme();
-  const [phoneNumber, setPhoneNumber] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [verificationCode, setVerificationCode] = useState("");
   const [otpSent, setOtpSent] = useState(false);
+  const [loader, setLoader] = useState(false);
   const { setActive } = useClerk();
-
-  const handleSendOTP = async () => {
-    if (!isLoaded) return;
-    try {
-      await signIn.create({
-        identifier: phoneNumber,
-        strategy: "phone_code",
-      });
-      setOtpSent(true);
-      Alert.alert("Sucesso", "Código de verificação enviado para o seu telefone.");
-    } catch (err: any) {
-      console.log(err)
-      Alert.alert("Erro", err.errors[0].message);
-    }
-  };
+  const { session } = useClerk();
 
   const handleVerifyOTP = async () => {
     if (!isLoaded) return;
+    setLoader(true);
+
     try {
-      const { session } = useClerk();
       if (session) {
         await signOut();
       }
 
-      const completeSignIn = await signIn.attemptFirstFactor({
-        strategy: "phone_code",
-        code: verificationCode,
+      const completeSignIn = await signIn?.create({
+        identifier: email,
+        password,
       });
 
       if (completeSignIn.status === "complete") {
@@ -49,14 +39,16 @@ export default function AddCount() {
 
           await saveAccount(completeSignIn?.createdSessionId ?? "", {
             id: completeSignIn?.id,
-            phoneNumber,
+            email,
+            userId: user?.id
           });
 
           Alert.alert("Sucesso", "Conta adicionada com sucesso!", [
             {
               text: "Adicionar outra conta",
               onPress: () => {
-                setPhoneNumber("");
+                setEmail("");
+                setPassword("");
                 setVerificationCode("");
                 setOtpSent(false);
               },
@@ -75,37 +67,60 @@ export default function AddCount() {
     } catch (err: any) {
       console.log(err);
       Alert.alert("Erro", err.errors[0]?.message || "Erro desconhecido.");
+    } finally {
+      setLoader(false);
     }
   };
 
 
   const saveAccount = async (sessionId: string, user: any) => {
-    const newAccount = { sessionId, user };
-    const storedAccounts = await AsyncStorage.getItem("logged_accounts");
-    const parsedAccounts = storedAccounts ? JSON.parse(storedAccounts) : [];
+    try {
+      const storedAccounts = await AsyncStorage.getItem("logged_accounts");
+      const parsedAccounts = storedAccounts ? JSON.parse(storedAccounts) : [];
 
-    const updatedAccounts = [...parsedAccounts, newAccount];
-    await AsyncStorage.setItem("logged_accounts", JSON.stringify(updatedAccounts));
+      if (!Array.isArray(parsedAccounts)) {
+        await AsyncStorage.setItem("logged_accounts", JSON.stringify([]));
+        return;
+      }
+
+      const exists = parsedAccounts.some((acc: any) => acc.sessionId === sessionId);
+      if (!exists) {
+        const updatedAccounts = [...parsedAccounts, { sessionId, user }];
+        await AsyncStorage.setItem("logged_accounts", JSON.stringify(updatedAccounts));
+      }
+    } catch (error) {
+      console.error("Erro ao salvar conta:", error);
+    }
   };
-
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.formContainer}>
         <Text style={[styles.title, { color: colors.text }]}>
-          {otpSent ? "Digite o código de verificação" : "Entre com seu número de telefone"}
+          {otpSent ? "Digite o código de verificação" : "Entre com seu email"}
         </Text>
         <View style={styles.inputs}>
           {!otpSent ? (
-            <TextInput
-              style={[styles.input, { color: colors.text, borderColor: colors.borderColor }]}
-              placeholder="Número de telefone"
-              placeholderTextColor={colors.text}
-              value={phoneNumber}
-              onChangeText={setPhoneNumber}
-              keyboardType="phone-pad"
-              textContentType="telephoneNumber"
-            />
+            <View>
+              <TextInput
+                style={[styles.input, { color: colors.text, borderColor: colors.borderColor }]}
+                placeholder="Email"
+                placeholderTextColor={colors.text}
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                textContentType="emailAddress"
+              />
+              <TextInput
+                style={[styles.input, { color: colors.text, borderColor: colors.borderColor }]}
+                placeholder="Senha ( 8 digitos)"
+                placeholderTextColor={colors.text}
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+                textContentType="password"
+              />
+            </View>
           ) : (
             <TextInput
               style={[styles.input, { color: colors.text, borderColor: colors.borderColor }]}
@@ -119,10 +134,15 @@ export default function AddCount() {
         </View>
         <TouchableOpacity
           style={[styles.button, { backgroundColor: colors.primary }]}
-          onPress={otpSent ? handleVerifyOTP : handleSendOTP}
+          onPress={handleVerifyOTP}
+          disabled={loader}
         >
           <Text style={[styles.buttonText, { color: colors.buttonText }]}>
-            {otpSent ? "Verificar" : "Enviar código"}
+            {loader ? (
+              <ActivityIndicator size={28} color={colors.buttonText} />
+            ) : (
+              ' Login'
+            )}
           </Text>
         </TouchableOpacity>
       </View>

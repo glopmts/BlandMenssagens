@@ -167,7 +167,7 @@ export const stylesChat = StyleSheet.create({
     position: "absolute",
     top: 3,
     right: -1,
-    zIndex: 1,
+    zIndex: 80,
     backgroundColor: "rgba(0, 0, 0, 0.5)",
     borderRadius: 16,
     padding: 8,
