@@ -1,16 +1,19 @@
-import { useTheme } from "@/hooks/useTheme"
-import { useSignIn } from "@clerk/clerk-expo"
-import { Link, useRouter } from "expo-router"
-import { useState } from "react"
-import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native"
+import { useTheme } from "@/hooks/useTheme";
+import { useAuth, useClerk, useSignIn } from "@clerk/clerk-expo";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Link, useRouter } from "expo-router";
+import { useState } from "react";
+import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 
-export default function Page() {
-  const { signIn, setActive, isLoaded } = useSignIn()
-  const router = useRouter()
-  const { theme, colors } = useTheme()
-  const [phoneNumber, setPhoneNumber] = useState("")
-  const [verificationCode, setVerificationCode] = useState("")
-  const [otpSent, setOtpSent] = useState(false)
+export default function AddCount() {
+  const { signIn, isLoaded } = useSignIn();
+  const { signOut } = useAuth();
+  const router = useRouter();
+  const { theme, colors } = useTheme();
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [verificationCode, setVerificationCode] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
+  const { setActive } = useClerk();
 
   const handleSendOTP = async () => {
     if (!isLoaded) return;
@@ -22,30 +25,69 @@ export default function Page() {
       setOtpSent(true);
       Alert.alert("Sucesso", "Código de verificação enviado para o seu telefone.");
     } catch (err: any) {
-      console.log("Erro de autenticação:", err);
-      Alert.alert("Erro", err.errors[0]?.message || "Erro desconhecido.");
+      console.log(err)
+      Alert.alert("Erro", err.errors[0].message);
     }
   };
-
 
   const handleVerifyOTP = async () => {
     if (!isLoaded) return;
     try {
+      const { session } = useClerk();
+      if (session) {
+        await signOut();
+      }
+
       const completeSignIn = await signIn.attemptFirstFactor({
         strategy: "phone_code",
         code: verificationCode,
       });
 
       if (completeSignIn.status === "complete") {
-        await setActive({ session: completeSignIn.createdSessionId });
-        router.push("/(drawer)/(tabs)");
+        setTimeout(async () => {
+          await setActive({ session: completeSignIn.createdSessionId });
+
+          await saveAccount(completeSignIn?.createdSessionId ?? "", {
+            id: completeSignIn?.id,
+            phoneNumber,
+          });
+
+          Alert.alert("Sucesso", "Conta adicionada com sucesso!", [
+            {
+              text: "Adicionar outra conta",
+              onPress: () => {
+                setPhoneNumber("");
+                setVerificationCode("");
+                setOtpSent(false);
+              },
+            },
+            {
+              text: "Ir para a Home",
+              onPress: () => {
+                router.push("/(drawer)/(tabs)");
+              },
+            },
+          ]);
+        }, 500);
       } else {
         Alert.alert("Erro", "Falha na verificação. Tente novamente.");
       }
     } catch (err: any) {
+      console.log(err);
       Alert.alert("Erro", err.errors[0]?.message || "Erro desconhecido.");
     }
   };
+
+
+  const saveAccount = async (sessionId: string, user: any) => {
+    const newAccount = { sessionId, user };
+    const storedAccounts = await AsyncStorage.getItem("logged_accounts");
+    const parsedAccounts = storedAccounts ? JSON.parse(storedAccounts) : [];
+
+    const updatedAccounts = [...parsedAccounts, newAccount];
+    await AsyncStorage.setItem("logged_accounts", JSON.stringify(updatedAccounts));
+  };
+
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -91,7 +133,7 @@ export default function Page() {
         </Text>
       </View>
     </View>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
@@ -147,5 +189,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#666",
     textAlign: "center",
-  }
-})
+  },
+});

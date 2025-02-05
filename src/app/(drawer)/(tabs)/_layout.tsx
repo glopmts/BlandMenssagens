@@ -1,5 +1,5 @@
 import { useTheme } from '@/hooks/useTheme';
-import { Entypo, Ionicons } from '@expo/vector-icons'; // Importe o ícone de lupa
+import { Entypo, Ionicons } from '@expo/vector-icons';
 import { DrawerActions } from "@react-navigation/native";
 import { Stack, useNavigation } from 'expo-router';
 import React from 'react';

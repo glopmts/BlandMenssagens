@@ -66,6 +66,7 @@ export default function ContactsScreen() {
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => <ContactListItem router={router} item={item} colors={colors} />}
         ListHeaderComponent={() => <Text style={[stylesListContacst.title, { color: colors.text }]}>Seus contatos salvos</Text>}
+        refreshing={refreshing}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -75,6 +76,11 @@ export default function ContactsScreen() {
           />
         }
       />
+      <View style={{ justifyContent: 'center', alignContent: 'center', flex: 1 }}>
+        {contacts.filter.length > 0 && (
+          <Text style={{ textAlign: 'center', color: colors.text, fontSize: 20, fontWeight: "800" }}>Sem contatos</Text>
+        )}
+      </View>
     </View>
   )
 }

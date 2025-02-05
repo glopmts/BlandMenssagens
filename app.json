@@ -8,13 +8,18 @@
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/images/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#1E1E1E"
+    },
     "ios": {
       "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/splash-icon.png",
-        "backgroundColor": "#1E1E1E"
+        "backgroundColor": "#ffff"
       },
       "permissions": [
         "android.permission.READ_CONTACTS",
@@ -35,8 +40,7 @@
         {
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 200,
-          "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
+          "backgroundColor": "#1E1E1E"
         }
       ],
       [
@@ -57,8 +61,8 @@
       [
         "expo-media-library",
         {
-          "photosPermission": "Allow $(PRODUCT_NAME) to access your photos.",
-          "savePhotosPermission": "Allow $(PRODUCT_NAME) to save photos.",
+          "photosPermission": "Allow $BlobSend to access your photos.",
+          "savePhotosPermission": "Allow $BlobSend to save photos.",
           "isAccessMediaLocationEnabled": true
         }
       ]

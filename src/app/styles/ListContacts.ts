@@ -3,11 +3,11 @@ import { StyleSheet } from 'react-native'
 export const stylesListContacst = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 10,
+    padding: 13,
   },
   title: {
     fontSize: 24,
-    fontWeight: "bold",
+    fontWeight: "800",
     marginBottom: 20,
   },
   loadingContainer: {

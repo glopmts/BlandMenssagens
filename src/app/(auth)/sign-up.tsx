@@ -1,10 +1,11 @@
 import { useTheme } from "@/hooks/useTheme"
 import { url } from "@/utils/url-api"
 import { useSignUp } from "@clerk/clerk-expo"
+import { LinearGradient } from 'expo-linear-gradient'
 import { useRouter } from "expo-router"
 import { parsePhoneNumber } from "libphonenumber-js"
-import { useState } from "react"
-import { ActivityIndicator, Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native"
+import React, { useState } from "react"
+import { ActivityIndicator, Alert, Animated, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native"
 
 export default function SignUp() {
   const { signUp, setActive, isLoaded } = useSignUp()
@@ -68,7 +69,7 @@ export default function SignUp() {
       }
 
       Alert.alert("Sucesso", "Conta criada com sucesso!");
-      router.push("/(profile)/newsUserUpadete");
+      router.push("/(pages)/(profile)/newsUserUpadete");
     } catch (err: any) {
       Alert.alert("Erro", err.errors[0].message);
       console.log(err);
@@ -78,15 +79,15 @@ export default function SignUp() {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={styles.formContainer}>
+    <LinearGradient colors={['#4d4949', '#2f2f2f', '#323131']} style={[styles.container, { backgroundColor: colors.background }]}>
+      <Animated.View style={styles.formContainer}>
         <Text style={[styles.title, { color: colors.text }]}>
           {pendingVerification ? "Digite o código de verificação" : "Crie sua conta"}
         </Text>
         <View style={styles.inputs}>
           {!pendingVerification ? (
             <TextInput
-              style={[styles.input, { color: colors.text, borderColor: colors.borderColor }]}
+              style={[styles.input, { color: colors.text, backgroundColor: colors.backgroundColorHeaderLinks, borderColor: colors.borderColor }]}
               placeholder="Número de telefone"
               placeholderTextColor={colors.text}
               value={phoneNumber}
@@ -96,7 +97,7 @@ export default function SignUp() {
             />
           ) : (
             <TextInput
-              style={[styles.input, { color: colors.text, borderColor: colors.borderColor }]}
+              style={[styles.input, { color: colors.text, backgroundColor: colors.backgroundColorHeaderLinks, borderColor: colors.borderColor }]}
               placeholder="Código de verificação"
               placeholderTextColor={colors.text}
               value={verificationCode}
@@ -119,8 +120,8 @@ export default function SignUp() {
             </Text>
           )}
         </TouchableOpacity>
-      </View>
-    </View>
+      </Animated.View>
+    </LinearGradient>
   )
 }
 
@@ -136,8 +137,8 @@ const styles = StyleSheet.create({
     maxWidth: 400,
   },
   title: {
-    fontSize: 20,
-    fontWeight: "bold",
+    fontSize: 28,
+    fontWeight: "800",
     marginBottom: 20,
     textAlign: "center",
   },

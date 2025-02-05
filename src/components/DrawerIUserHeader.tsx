@@ -1,4 +1,5 @@
 import { User } from "@/types/interfaces";
+import { AntDesign } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { router } from "expo-router";
 import { ActivityIndicator, Platform, StyleSheet, Text, TouchableOpacity, View } from "react-native";
@@ -9,9 +10,11 @@ interface UserProps {
   colors: any;
   userData: User | null;
   isLoader?: boolean;
+  toggleMenu: () => void;
+  isExpanded: boolean;
 }
 
-export default function UserInforDrawer({ colors, userData, isLoader }: UserProps) {
+export default function UserInforDrawer({ colors, userData, isLoader, isExpanded, toggleMenu }: UserProps) {
   return (
     <View style={[{ backgroundColor: colors.backgroundColorHeader }]}>
       {isLoader ? (
@@ -21,7 +24,7 @@ export default function UserInforDrawer({ colors, userData, isLoader }: UserProp
       ) : (
         <View style={styles.userInfo}>
           <View style={[styles.userInfoOptions]}>
-            <TouchableOpacity onPress={() => router.navigate("/(profile)/profile")} style={[styles.avatarInfor]}>
+            <TouchableOpacity onPress={() => router.navigate("/(pages)/(profile)/profile")} style={[styles.avatarInfor]}>
               <View style={styles.userInfoAvatar}>
                 {userData?.imageurl ? (
                   <Image source={{ uri: userData?.imageurl }} style={styles.userInfoAvatarImage} />
@@ -46,9 +49,14 @@ export default function UserInforDrawer({ colors, userData, isLoader }: UserProp
             <Text style={[styles.userInfoName, { color: colors.text }]}>
               {userData?.name ?? 'No name'}
             </Text>
-            <Text style={[styles.userInfoPhone, { color: colors.text }]}>
-              {userData?.phone ?? 'No number'}
-            </Text>
+            <View style={styles.inforSidbar}>
+              <Text style={[styles.userInfoPhone, { color: colors.text }]}>
+                {userData?.phone ?? 'No number'}
+              </Text>
+              <TouchableOpacity onPress={toggleMenu}>
+                <AntDesign name={isExpanded ? "up" : "down"} size={20} color={colors.text} />
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       )}
@@ -108,5 +116,9 @@ const styles = StyleSheet.create(({
     alignItems: 'baseline',
     paddingTop: 10,
   },
-
+  inforSidbar: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
+  }
 }))

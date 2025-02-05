@@ -1,19 +1,17 @@
 import { ThemeProvider } from '@/context/ThemeContext';
-import { useNotifications } from '@/hooks/useNotifications';
 import { useTheme } from '@/hooks/useTheme';
 import { tokenCache } from '@/utils/cache';
-import { ClerkLoaded, ClerkProvider, useAuth } from '@clerk/clerk-expo';
+import { ClerkLoaded, ClerkProvider } from '@clerk/clerk-expo';
 import { PortalProvider } from '@gorhom/portal';
 import { useFonts } from 'expo-font';
 import * as Notifications from "expo-notifications";
-import { Stack, useRouter } from 'expo-router';
+import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect } from 'react';
 import 'react-native-gesture-handler';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import 'react-native-reanimated';
-import CreateUserBackend from './actions/userAuth';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -25,7 +23,6 @@ if (!publishableKey) {
   );
 }
 
-// Configurar o handler global das notificações
 Notifications.setNotificationHandler({
   handleNotification: async (notification) => {
     console.log('Notificação recebida no primeiro plano:', notification);
@@ -39,20 +36,9 @@ Notifications.setNotificationHandler({
 
 function RootLayoutNav() {
   const { colors } = useTheme();
-  const { isLoaded, isSignedIn } = useAuth();
-  const router = useRouter();
-  const { registerForPushNotificationsAsync } = useNotifications();
-
-  useEffect(() => {
-    if (isLoaded && !isSignedIn) {
-      router.push('/(auth)/sign-in');
-      CreateUserBackend();
-    }
-    registerForPushNotificationsAsync();
-  }, [isLoaded, isSignedIn]);
-
   return (
     <>
+      <StatusBar translucent={true} />
       <GestureHandlerRootView style={{ flex: 1 }}>
         <PortalProvider>
           <Stack
@@ -65,6 +51,7 @@ function RootLayoutNav() {
               headerShown: false,
             }}
           >
+            <Stack.Screen name='index' />
             <Stack.Screen name="(drawer)" />
             <Stack.Screen name="(auth)" />
             <Stack.Screen name="(profile)" />
@@ -73,7 +60,6 @@ function RootLayoutNav() {
           </Stack>
         </PortalProvider>
       </GestureHandlerRootView>
-      <StatusBar translucent={true} />
     </>
   );
 }

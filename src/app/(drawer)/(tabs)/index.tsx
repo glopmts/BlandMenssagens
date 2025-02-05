@@ -1,4 +1,4 @@
-import { useUser } from "@clerk/clerk-expo"
+import { useAuth, useUser } from "@clerk/clerk-expo"
 import { useEffect } from "react"
 import { ActivityIndicator, Alert, AppState, View } from "react-native"
 
@@ -14,6 +14,7 @@ export default function TabOneScreen() {
   const { colors } = useTheme()
   const { isLoaded, user } = useUser()
   const userId = user?.id || ''
+  const { signOut } = useAuth();
 
   useEffect(() => {
     const checkPermissions = async () => {
@@ -54,6 +55,10 @@ export default function TabOneScreen() {
       updateUserOnlineStatus(user?.id, false);
     };
   }, [user]);
+
+  const signOutUser = async () => {
+    await signOut()
+  }
 
   if (!isLoaded) {
     return (

@@ -130,7 +130,7 @@ export default function MensagensList() {
           extraData={mensagens}
           keyExtractor={(item) => item.id}
           renderItem={renderItem}
-          ListEmptyComponent={<Text style={[stylesListMenssagens.emptyText, { color: colors.text }]}>No messages yet!</Text>}
+          ListEmptyComponent={<Text style={[stylesListMenssagens.emptyText, { color: colors.text }]}>Sem menssagens até o momento!</Text>}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}

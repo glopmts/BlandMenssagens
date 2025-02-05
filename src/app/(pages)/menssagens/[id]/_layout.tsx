@@ -1,5 +1,6 @@
 import { useTheme } from "@/hooks/useTheme"
 import { url } from "@/utils/url-api"
+import { useUser } from "@clerk/clerk-expo"
 import { format, } from "date-fns"
 import { formatDistanceToNow } from "date-fns/formatDistanceToNow"
 import { Image } from "expo-image"
@@ -8,9 +9,10 @@ import { useEffect, useState } from "react"
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native"
 
 export default function MensagensLayout() {
+  const { user } = useUser()
   const { colors } = useTheme()
   const { id } = useLocalSearchParams<{ id: string }>()
-  const userId = id;
+  const userId = user?.id;
   const [name, setName] = useState<string>("")
   const [phone, setPhone] = useState<string>("")
   const [image, setImage] = useState<string | null>(null)
@@ -20,11 +22,21 @@ export default function MensagensLayout() {
   useEffect(() => {
     const fetchData = async () => {
       if (userId) {
-        const res = await fetch(`${url}/api/user/${userId}`)
+        const res = await fetch(`${url}/api/user/contactInfor`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            userId,
+            contactId: id,
+          }),
+        })
         if (!res.ok) {
           throw new Error(`Error fetching user data: ${res.status}`)
         }
         const userData = await res.json()
+        console.log(userData)
         setName(userData.name)
         setPhone(userData.phone)
         setImage(userData.imageurl)
