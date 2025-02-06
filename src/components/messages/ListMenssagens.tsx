@@ -7,10 +7,9 @@ import { Image } from "expo-image";
 import { router } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, Alert, FlatList, RefreshControl, Text, TouchableOpacity, View } from "react-native";
-
 import io from "socket.io-client";
-const socket = io("http://192.168.18.8:5001");
 
+const socket = io("http://192.168.18.8:5001");
 
 export default function MensagensList() {
   const { user } = useUser();
@@ -38,10 +37,8 @@ export default function MensagensList() {
 
       const groupedMessages = groupMessagesByContact(mensagensFormatadas);
       setMensagens(groupedMessages);
-      return mensagensFormatadas;
     } catch (error: any) {
       Alert.alert("Erro", error.message);
-      return [];
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -51,58 +48,26 @@ export default function MensagensList() {
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     fetchMensagens(user?.id!);
-  }, [fetchMensagens]);
+  }, [user?.id]);
 
   useEffect(() => {
-    if (user?.id) {
-      fetchMensagens(user.id);
-    }
-  }, [user])
+    if (!user?.id) return;
 
+    fetchMensagens(user.id);
 
-  function ListMensagens({ item, colors }: { item: Mensagens; colors: any }) {
-    const { user } = useUser();
-    const lastSeenText = item.created_at
-      ? new Date(item.created_at).toLocaleString()
-      : "Never seen";
+    socket.on(`chat:${user.id}`, (novaMensagem: Mensagens) => {
+      console.log("Nova mensagem recebida:", novaMensagem);
 
-    const isSender = item.sender_id === user?.id;
-    const contact = isSender ? item.receiver : item.sender;
-    const contactImage = contact.imageurl;
-    const contactName = contact.name;
+      setMensagens((mensagensAtuais) => {
+        const mensagensAtualizadas = [...mensagensAtuais, novaMensagem];
+        return groupMessagesByContact(mensagensAtualizadas);
+      });
+    });
 
-    const renderImage = contactImage ? (
-      <Image source={{ uri: contactImage }} style={stylesListMenssagens.contactImage} />
-    ) : (
-      <View style={[stylesListMenssagens.contactInitial, { backgroundColor: colors.primary }]}>
-        <Text style={stylesListMenssagens.contactInitialText}>
-          {contactName ? contactName.charAt(0).toUpperCase() : ""}
-        </Text>
-      </View>
-    );
-
-    return (
-      <TouchableOpacity
-        style={stylesListMenssagens.messagesItem}
-        onPress={() => router.navigate(`/(pages)/menssagens/${contact.clerk_id}`)}
-      >
-        {renderImage}
-        <View style={stylesListMenssagens.contaInfo}>
-          <View style={stylesListMenssagens.namesDate}>
-            <Text style={[stylesListMenssagens.contactName, { color: colors.text }]}>
-              {contactName || "Name not found"}
-            </Text>
-            <Text style={stylesListMenssagens.lastSeen}>{lastSeenText}</Text>
-          </View>
-          <Text style={[stylesListMenssagens.messageText, { color: colors.text }]}>{item.content}</Text>
-        </View>
-      </TouchableOpacity>
-    );
-  }
-
-  const renderItem = ({ item }: { item: Mensagens }) => (
-    <ListMensagens item={item} colors={colors} />
-  );
+    return () => {
+      socket.off(`chat:${user.id}`);
+    };
+  }, [user?.id]);
 
   const groupMessagesByContact = (messages: Mensagens[]) => {
     const groupedMessages: { [key: string]: Mensagens } = {};
@@ -118,6 +83,10 @@ export default function MensagensList() {
     return Object.values(groupedMessages);
   };
 
+  const renderItem = ({ item }: { item: Mensagens }) => (
+    <ListMensagens item={item} colors={colors} />
+  );
+
   return (
     <View style={[stylesListMenssagens.container, { backgroundColor: colors.backgroundColorContacts }]}>
       {isLoading ? (
@@ -127,10 +96,9 @@ export default function MensagensList() {
       ) : (
         <FlatList
           data={mensagens}
-          extraData={mensagens}
           keyExtractor={(item) => item.id}
           renderItem={renderItem}
-          ListEmptyComponent={<Text style={[stylesListMenssagens.emptyText, { color: colors.text }]}>Sem menssagens até o momento!</Text>}
+          ListEmptyComponent={<Text style={[stylesListMenssagens.emptyText, { color: colors.text }]}>Sem mensagens até o momento!</Text>}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
@@ -145,4 +113,46 @@ export default function MensagensList() {
   );
 }
 
+function ListMensagens({ item, colors }: { item: Mensagens; colors: any }) {
+  const { user } = useUser();
+  const lastSeenText = item.created_at
+    ? new Date(item.created_at).toLocaleString()
+    : "Never seen";
 
+  const isSender = item.sender_id === user?.id;
+  const contact = isSender ? item.receiver : item.sender;
+  const contactImage = contact.imageurl;
+  const contactName = contact.name;
+
+  const renderImage = contactImage ? (
+    <Image source={{ uri: contactImage }} style={stylesListMenssagens.contactImage} />
+  ) : (
+    <View style={[stylesListMenssagens.contactInitial, { backgroundColor: colors.primary }]}>
+      <Text style={stylesListMenssagens.contactInitialText}>
+        {contactName ? contactName.charAt(0).toUpperCase() : ""}
+      </Text>
+    </View>
+  );
+
+  return (
+    <TouchableOpacity
+      style={stylesListMenssagens.messagesItem}
+      onPress={() => router.navigate(`/(pages)/menssagens/${contact.clerk_id}`)}
+    >
+      {renderImage}
+      <View style={stylesListMenssagens.contaInfo}>
+        <View style={stylesListMenssagens.namesDate}>
+          <Text style={[stylesListMenssagens.contactName, { color: colors.text }]}>
+            {contactName || "Name not found"}
+          </Text>
+          <Text style={stylesListMenssagens.lastSeen}>{lastSeenText}</Text>
+        </View>
+        {item.content ? (
+          <Text style={[stylesListMenssagens.messageText, { color: colors.text }]}>{item.content}</Text>
+        ) : (
+          <Text style={[stylesListMenssagens.messageText, { color: colors.text }]}>{item.legendImage}</Text>
+        )}
+      </View>
+    </TouchableOpacity>
+  );
+}

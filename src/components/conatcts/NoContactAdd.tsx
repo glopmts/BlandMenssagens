@@ -4,8 +4,8 @@ import { AntDesign } from "@expo/vector-icons";
 import { Portal } from "@gorhom/portal";
 import { useEffect, useState } from "react";
 import { Dimensions, StyleSheet, Text, ToastAndroid, TouchableOpacity, View } from "react-native";
+import BottomSheetComponent from "../BottomSheet";
 import AddContacts from "./AddContacts";
-import BottomSheetComponent from "./BottomSheet";
 
 interface ContactProps {
   userId: string;
@@ -21,7 +21,7 @@ export default function NoAddContact({ userId, contactId, number }: ContactProps
   const snapPoints = [screenHeight * 0.5];
 
   useEffect(() => {
-    const checkContact = async () => {
+    const checkContact = setInterval(async () => {
       try {
         const response = await fetch(`${url}/api/user/conferiContact`, {
           method: "POST",
@@ -40,8 +40,8 @@ export default function NoAddContact({ userId, contactId, number }: ContactProps
         ToastAndroid.show("Erro ao verificar contato", ToastAndroid.SHORT);
         console.error("Erro ao buscar contato:", error);
       }
-    };
-    checkContact();
+    }, 5000);
+    return () => clearInterval(checkContact);
   }, [userId, contactId]);
 
   return (

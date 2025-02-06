@@ -37,7 +37,8 @@ export const stylesChat = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
-    minWidth: 80,
+    minWidth: 90,
+    justifyContent: "space-between"
   },
   sentMessage: {
     alignSelf: "flex-end",
@@ -166,8 +167,7 @@ export const stylesChat = StyleSheet.create({
   optionsButton: {
     position: "absolute",
     top: 3,
-    right: -1,
-    zIndex: 80,
+    zIndex: 150,
     backgroundColor: "rgba(0, 0, 0, 0.5)",
     borderRadius: 16,
     padding: 8,

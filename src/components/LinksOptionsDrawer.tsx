@@ -4,8 +4,8 @@ import { Portal } from '@gorhom/portal';
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import AddContacts from "./AddContacts";
 import BottomSheetComponent from "./BottomSheet";
+import AddContacts from "./conatcts/AddContacts";
 
 export default function LinksOptionsDrawer() {
   const router = useRouter();

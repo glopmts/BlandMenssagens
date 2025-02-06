@@ -1,6 +1,6 @@
 import { stylesListContacst } from "@/app/styles/ListContacts";
-import AddContacts from "@/components/AddContacts";
 import BottomSheetComponent from "@/components/BottomSheet";
+import AddContacts from "@/components/conatcts/AddContacts";
 import { ContactsListUser } from "@/hooks/useContacts";
 import { useTheme } from "@/hooks/useTheme";
 import { useUser } from "@clerk/clerk-expo";

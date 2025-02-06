@@ -1,5 +1,6 @@
-import { MessageItem } from "@/components/MessagensRenderChat"
-import NoAddContact from "@/components/NoContactAdd"
+import NoAddContact from "@/components/conatcts/NoContactAdd"
+import AudioRecorder from "@/components/messages/MessageAud"
+import { MessageItem } from "@/components/messages/MessagensRenderChat"
 import { useMessages } from "@/hooks/useMessages"
 import { useTheme } from "@/hooks/useTheme"
 import { deleteOldImage } from "@/types/deleteImagemFirebase"
@@ -31,23 +32,40 @@ export default function MensagensPageRender() {
   const { user } = useClerk()
   const { id } = useLocalSearchParams<{ id: string }>()
   const { colors } = useTheme()
-  const { messages, loading, sendMessage, handleDeleteMessage } = useMessages(user?.id || "", id)
+  const { messages, loading, sendMessage, handleDeleteMessage, updateMessageStatus } = useMessages(user?.id || "", id)
   const [newMessage, setNewMessage] = useState("")
   const [legendImage, setLegendImage] = useState("")
   const [imageUrl, setImageUrl] = useState<string[]>([])
   const [isUploading, setIsUploading] = useState(false)
   const flatListRef = useRef<FlatList>(null)
   const [phoneNumber, setPhoneNumber] = useState<string | null>(null)
+  const [imageUser, setImage] = useState<string | null>(null)
   const contactId = messages.find((d) => user?.id === d.receiver_id)?.sender_id;
 
-  const handleCopy = async (text: string, id: string) => {
-    try {
-      await Clipboard.setStringAsync(text)
-      ToastAndroid.show("Mensagem copiada!", ToastAndroid.SHORT)
-    } catch (error) {
-      console.error("Erro ao copiar para a área de transferência:", error)
+  useEffect(() => {
+    const fetchData = async () => {
+      const response = await fetch(`${url}/api/user/${contactId}`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch user data");
+      }
+      const userData = await response.json();
+      setPhoneNumber(userData.phone);
+      setImage(userData.imageurl);
     }
-  }
+    fetchData();
+  }, [contactId])
+
+
+  const handleCopy = async (text: string, id: string, legendImage: string) => {
+    try {
+      const copyText = legendImage ? `${text}\n${legendImage}` : text;
+      await Clipboard.setStringAsync(copyText);
+      ToastAndroid.show("Mensagem copiada!", ToastAndroid.SHORT);
+    } catch (error) {
+      console.error("Erro ao copiar para a área de transferência:", error);
+    }
+  };
+
 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -91,17 +109,24 @@ export default function MensagensPageRender() {
     flatListRef.current?.scrollToEnd({ animated: true })
   }
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const response = await fetch(`${url}/api/user/${contactId}`);
-      if (!response.ok) {
-        throw new Error("Failed to fetch user data");
-      }
-      const userData = await response.json();
-      setPhoneNumber(userData.phone);
+
+  const handleSendAudio = async (audioUri: string) => {
+    try {
+      const response = await fetch(audioUri)
+      const blob = await response.blob()
+      const audioRef = ref(
+        storage,
+        `app-menssagens/audio/${Date.now()}-${user?.id}-${Math.random().toString(36).substring(7)}.m4a`,
+      )
+      await uploadBytes(audioRef, blob)
+      const audioUrl = await getDownloadURL(audioRef)
+
+      await sendMessage("", "", [], audioUrl)
+    } catch (error) {
+      console.error("Error sending audio message:", error)
+      ToastAndroid.show("Error sending audio message", ToastAndroid.SHORT)
     }
-    fetchData();
-  }, [contactId])
+  }
 
   const closeImage = async () => {
     try {
@@ -115,7 +140,6 @@ export default function MensagensPageRender() {
       ToastAndroid.show("Erro ao remover imagem", ToastAndroid.SHORT);
     }
   };
-
 
   if (loading) {
     return (
@@ -134,10 +158,12 @@ export default function MensagensPageRender() {
     <MessageItem
       item={item}
       user={user}
+      imageUser={imageUser!}
       colors={colors}
       handleCopy={handleCopy}
       downloadImage={downloadImage}
-      deleteMessage={(messageId) => handleDeleteMessage(messageId, item.created_at, user?.id!)}
+      updateMessageStatus={updateMessageStatus}
+      deleteMessage={(messageId) => handleDeleteMessage(messageId, item.created_at, user?.id!, item.audioUrl)}
     />
   );
 
@@ -193,24 +219,28 @@ export default function MensagensPageRender() {
               textAlignVertical="center"
             />
           ) : (
-            <TextInput
-              style={[
-                stylesChat.input,
-                {
-                  backgroundColor: colors.card,
-                  color: colors.text,
-                  borderColor: colors.borderColor,
-                  borderWidth: 1,
-                },
-              ]}
-              value={newMessage}
-              onChangeText={setNewMessage}
-              placeholder={'Nova mensagem...'}
-              placeholderTextColor={colors.PlaceholderTextColor}
-              multiline={true}
-              scrollEnabled={true}
-              textAlignVertical="center"
-            />
+            <View style={{ flexDirection: 'row', gap: 4 }}>
+              <TextInput
+                style={[
+                  stylesChat.input,
+                  {
+                    backgroundColor: colors.card,
+                    color: colors.text,
+                    borderColor: colors.borderColor,
+                    borderWidth: 1,
+                  },
+                ]}
+                value={newMessage}
+                onChangeText={setNewMessage}
+                placeholder={'Nova mensagem...'}
+                placeholderTextColor={colors.PlaceholderTextColor}
+                multiline={true}
+                scrollEnabled={true}
+                textAlignVertical="center"
+              />
+
+              <AudioRecorder onSend={handleSendAudio} />
+            </View>
           )}
         </View>
         {isUploading ? (

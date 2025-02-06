@@ -5,14 +5,19 @@ import ImageViewing from "react-native-image-viewing";
 
 interface ImageProps {
   imageUrl: string;
+  onLongPress?: () => void;
 }
 
-export default function FullScreenImage({ imageUrl, }: ImageProps) {
+export default function FullScreenImage({ imageUrl, onLongPress }: ImageProps) {
   const [visible, setVisible] = useState(false);
+
+  const handleOpenImage = () => {
+    setVisible(true);
+  };
 
   return (
     <>
-      <TouchableOpacity onPress={() => setVisible(true)}>
+      <TouchableOpacity onPress={handleOpenImage} onLongPress={onLongPress} delayLongPress={300}>
         <Image source={{ uri: imageUrl }} style={stylesChat.image} />
       </TouchableOpacity>
 

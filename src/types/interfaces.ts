@@ -33,13 +33,16 @@ export interface Mensagens {
   contact_image?: string | null;
   images: string[]
   status: "send" | "delivered" | "read"
+  audioUrl?: string;
 }
 
 export interface MessageProperties {
   item: Mensagens
   user: any
   colors: any
-  handleCopy: (text: string, messageId: string) => void
+  imageUser?: string
+  handleCopy: (text: string, messageId: string, legendImage: string) => void
   downloadImage: (image: string) => void
-  deleteMessage: (messageId: string, created_at: string) => void
+  deleteMessage: (messageId: string, created_at: string) => void;
+  updateMessageStatus: (messageId: string, newStatus: string) => void;
 }

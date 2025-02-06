@@ -3,8 +3,8 @@ import { useEffect } from "react"
 import { ActivityIndicator, Alert, AppState, View } from "react-native"
 
 import { requestNotificationPermission, useRegisterPushToken } from "@/components/GetTokensNotifications"
-import ContactsScreen from "@/components/ListContacts"
-import MenssagensList from "@/components/ListMenssagens"
+import ContactsScreen from "@/components/conatcts/ListContacts"
+import MenssagensList from "@/components/messages/ListMenssagens"
 import { useTheme } from "@/hooks/useTheme"
 import { updateUserOnlineStatus } from "@/utils/userStatus"
 

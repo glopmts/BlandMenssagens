@@ -9,3 +9,12 @@ export const deleteOldImage = async (imageUrl: string) => {
     console.error("Erro ao excluir a imagem antiga:", error);
   }
 };
+
+export const deleteOldAudio = async (audioUrl: string) => {
+  try {
+    const audioRef = ref(storage, audioUrl);
+    await deleteObject(audioRef);
+  } catch (error) {
+    console.error("Erro ao excluir o áudio antigo:", error);
+  }
+}

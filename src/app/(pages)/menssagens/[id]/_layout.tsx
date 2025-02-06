@@ -38,9 +38,9 @@ export default function MensagensLayout() {
         const userData = await res.json()
         setName(userData.name)
         setPhone(userData.phone)
-        setImage(userData.imageurl)
-        setIsOnline(userData.isOnline)
-        setLastOnline(userData.lastOnline)
+        setImage(userData.image)
+        setIsOnline(userData.user.isOnline)
+        setLastOnline(userData.user.lastOnline)
       }
     }
     fetchData()

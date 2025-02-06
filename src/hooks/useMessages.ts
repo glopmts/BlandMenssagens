@@ -1,3 +1,4 @@
+import { deleteOldAudio, deleteOldImage } from "@/types/deleteImagemFirebase";
 import { Mensagens } from "@/types/interfaces";
 import { url } from "@/utils/url-api";
 import { useEffect, useState } from "react";
@@ -46,72 +47,74 @@ export function useMessages(chatId: string, userId: string) {
     fetchMessages();
   }, [userId]);
 
-  const handleDeleteMessage = async (messageId: string, createdAt: string, userId: string) => {
+  const updateMessageStatus = async (messageId: string, status: string) => {
+    try {
+      await fetch(`${url}/api/user/updateMessageStatus`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ messageId, userId, status }),
+      });
+    } catch (error) {
+      console.error("Error updating message status:", error);
+    }
+  }
+
+  const handleDeleteMessage = async (messageId: string, createdAt: string, userId: string, audioUrl?: string, images: string[] = []) => {
     const messageTime = new Date(createdAt).getTime();
     const currentTime = new Date().getTime();
     const timeDifference = currentTime - messageTime;
     const fiveMinutes = 5 * 60 * 1000;
 
-    if (timeDifference < fiveMinutes) {
-      Alert.alert(
-        "Deletar Mensagem",
-        "Esta mensagem será deletada para todos. Tem certeza?",
-        [
-          { text: "Cancelar", style: "cancel" },
-          {
-            text: "Deletar",
-            onPress: async () => {
-              try {
-                await fetch(`${url}/api/user/deleteMessagen`, {
-                  method: 'DELETE',
-                  headers: {
-                    'Content-Type': 'application/json',
-                  },
-                  body: JSON.stringify({ messageId, userId }),
-                });
-                ToastAndroid.show("Mensagem deletada com sucesso!", ToastAndroid.SHORT);
-              } catch (err) {
-                Alert.alert("Erro ao deletar mensagem");
-                console.error("Erro deletando mensagem:", err);
-              } finally {
-                setMessages(messages.filter((msg) => msg.id !== messageId));
-              }
-            },
+    const deleteImages = async () => {
+      if (images.length > 0) {
+        await Promise.all(images.map((url) => deleteOldImage(url)));
+      }
+    };
+
+    const deleteAudio = async () => {
+      if (audioUrl) {
+        await deleteOldAudio(audioUrl);
+      }
+    };
+
+    Alert.alert(
+      "Deletar Mensagem",
+      timeDifference < fiveMinutes
+        ? "Esta mensagem será deletada para todos. Tem certeza?"
+        : "Esta mensagem será deletada apenas para você. Tem certeza?",
+      [
+        { text: "Cancelar", style: "cancel" },
+        {
+          text: "Deletar",
+          onPress: async () => {
+            try {
+              await deleteImages();
+              await deleteAudio();
+
+              await fetch(`${url}/api/user/deleteMessagen`, {
+                method: "DELETE",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ messageId, userId }),
+              });
+
+              ToastAndroid.show("Mensagem deletada com sucesso!", ToastAndroid.SHORT);
+              setMessages((prev) => prev.filter((msg) => msg.id !== messageId));
+            } catch (err) {
+              Alert.alert("Erro ao deletar mensagem");
+              console.error("Erro deletando mensagem:", err);
+            }
           },
-        ]
-      );
-    } else {
-      Alert.alert(
-        "Deletar Mensagem",
-        "Esta mensagem será deletada apenas para você. Tem certeza?",
-        [
-          { text: "Cancelar", style: "cancel" },
-          {
-            text: "Deletar",
-            onPress: async () => {
-              try {
-                await fetch(`${url}/api/user/deleteMessagen`, {
-                  method: 'DELETE',
-                  headers: {
-                    'Content-Type': 'application/json',
-                  },
-                  body: JSON.stringify({ messageId, userId }),
-                });
-                ToastAndroid.show("Mensagem deletada com sucesso!", ToastAndroid.SHORT);
-              } catch (err) {
-                Alert.alert("Erro ao deletar mensagem");
-                console.error("Erro deletando mensagem:", err);
-              } finally {
-                setMessages(messages.filter((msg) => msg.id !== messageId));
-              }
-            },
-          },
-        ]
-      );
-    }
+        },
+      ]
+    );
   };
 
-  const sendMessage = (content: string, legendImage: string, imageUrl: string[] = []) => {
+
+  const sendMessage = (content: string, legendImage: string, imageUrl: string[] = [], audioUrl?: string) => {
     const newMessage: Mensagens = {
       id: Date.now().toString(),
       sender_id: chatId,
@@ -121,10 +124,12 @@ export function useMessages(chatId: string, userId: string) {
       status: "send",
       legendImage: legendImage,
       is_deleted: false,
-      images: imageUrl
+      images: imageUrl,
+      audioUrl: audioUrl
     };
     socket.emit("send_message", newMessage);
   };
 
-  return { messages, loading, sendMessage, handleDeleteMessage };
+
+  return { messages, loading, sendMessage, handleDeleteMessage, updateMessageStatus };
 }
