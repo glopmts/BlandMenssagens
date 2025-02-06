@@ -86,7 +86,6 @@ const Sidebar = ({ heightAnim, imageurl, name }: SidebarProps) => {
     }
   };
 
-
   return (
     <View style={[styles.container, { backgroundColor: colors.backgroundColorHeaderLinks, borderBottomColor: colors.borderColor }]}>
       <Animated.View style={[styles.subMenu, { height: heightAnim }]}>

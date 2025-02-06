@@ -1,5 +1,5 @@
 import DropwMenu from "@/components/DropwMenu"
-import { handleClearMenssagens } from "@/hooks/useMessages"
+import { handleChatUser, handleClearMenssagens } from "@/hooks/useMessages"
 import { useTheme } from "@/hooks/useTheme"
 import { url } from "@/utils/url-api"
 import { useUser } from "@clerk/clerk-expo"
@@ -7,9 +7,10 @@ import { Ionicons } from "@expo/vector-icons"
 import { format, } from "date-fns"
 import { formatDistanceToNow } from "date-fns/formatDistanceToNow"
 import { Image } from "expo-image"
-import { Stack, useLocalSearchParams } from "expo-router"
+import { router, Stack, useLocalSearchParams } from "expo-router"
 import { useEffect, useState } from "react"
-import { Alert, Modal, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from "react-native"
+import { Alert, Modal, SafeAreaView, Text, TouchableOpacity, View } from "react-native"
+import { stylesLayoutId } from "../../../styles/stylesLayout-id"
 
 export default function MensagensLayout() {
   const { user } = useUser()
@@ -97,6 +98,14 @@ export default function MensagensLayout() {
     setClearModalVisible(false)
   }
 
+  const handleDeletePress = async () => {
+    if (!userId || !chatWith) {
+      Alert.alert("Erro: userId ou chatWith não definidos.");
+      return;
+    }
+    await handleChatUser(userId!, chatWith)
+    router.push("/(drawer)/(tabs)")
+  }
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -113,7 +122,7 @@ export default function MensagensLayout() {
           options={{
             headerTitle: () => (
               <TouchableOpacity>
-                <View style={styles.containerInfor}>
+                <View style={stylesLayoutId.containerInfor}>
                   {image ? (
                     <Image
                       style={{ width: 40, height: 40, borderRadius: 30 }}
@@ -130,14 +139,14 @@ export default function MensagensLayout() {
                         alignItems: "center",
                       }}
                     >
-                      <Text style={[styles.headerTitle, { color: colors.text }]}>
+                      <Text style={[stylesLayoutId.headerTitle, { color: colors.text }]}>
                         {name?.charAt(0).toUpperCase() || "MG"}
                       </Text>
                     </View>
                   )}
                   <View>
-                    <Text style={[styles.headerTitle, { color: colors.text }]}>{name || phone}</Text>
-                    <Text style={[styles.onlineStatus, { color: isOnline ? colors.primary : colors.gray }]}>
+                    <Text style={[stylesLayoutId.headerTitle, { color: colors.text }]}>{name || phone}</Text>
+                    <Text style={[stylesLayoutId.onlineStatus, { color: isOnline ? colors.primary : colors.gray }]}>
                       {isOnline ? "Online" : formatLastOnline(lastOnline)}
                     </Text>
                   </View>
@@ -156,92 +165,37 @@ export default function MensagensLayout() {
       <DropwMenu items={menuItems} visible={dropdown} onClose={() => setDropdown(false)} onItemPress={handleMenuItemPress} />
 
       <Modal transparent style={{ flex: 1 }} visible={deleteModalVisible} animationType="slide">
-        <View style={[styles.modalContainer]}>
-          <View style={[styles.modalContainerItens, { backgroundColor: colors.card }]}>
-            <Text style={[styles.modalText, { color: colors.text }]}>Deseja realmente apagar este chat?</Text>
-            <View style={styles.buttonsContainer}>
-              <TouchableOpacity style={styles.buttonCancele} onPress={() => setDeleteModalVisible(false)}>
-                <Text style={[styles.textButtons, { color: colors.text }]}>Cancelar</Text>
+        <View style={[stylesLayoutId.modalContainer]}>
+          <View style={[stylesLayoutId.modalContainerItens, { backgroundColor: colors.card }]}>
+            <Text style={[stylesLayoutId.modalText, { color: colors.text }]}>Deseja realmente apagar este chat?</Text>
+            <View style={stylesLayoutId.buttonsContainer}>
+              <TouchableOpacity style={stylesLayoutId.buttonCancele} onPress={() => setDeleteModalVisible(false)}>
+                <Text style={[stylesLayoutId.textButtons, { color: colors.text }]}>Cancelar</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.button} onPress={() => { }}>
-                <Text style={[styles.textButtons, { color: colors.red }]}>Apagar</Text>
+              <TouchableOpacity style={stylesLayoutId.button} onPress={handleDeletePress}>
+                <Text style={[stylesLayoutId.textButtons, { color: colors.red }]}>Apagar</Text>
               </TouchableOpacity>
             </View>
           </View>
         </View>
       </Modal>
       <Modal transparent style={{ flex: 1 }} visible={clearModalVisible} animationType="slide">
-        <View style={[styles.modalContainer]}>
-          <View style={[styles.modalContainerItens, { backgroundColor: colors.card }]}>
-            <Text style={[styles.modalText, { color: colors.text }]}>Deseja realmente limpar todas as conversas?</Text>
-            <View style={styles.buttonsContainer}>
-              <TouchableOpacity style={styles.buttonCancele} onPress={() => setClearModalVisible(false)}>
-                <Text style={[styles.textButtons, { color: colors.text }]}>Cancelar</Text>
+        <View style={[stylesLayoutId.modalContainer]}>
+          <View style={[stylesLayoutId.modalContainerItens, { backgroundColor: colors.card }]}>
+            <Text style={[stylesLayoutId.modalText, { color: colors.text }]}>Deseja realmente limpar todas as conversas?</Text>
+            <View style={stylesLayoutId.buttonsContainer}>
+              <TouchableOpacity style={stylesLayoutId.buttonCancele} onPress={() => setClearModalVisible(false)}>
+                <Text style={[stylesLayoutId.textButtons, { color: colors.text }]}>Cancelar</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.button} onPress={handleClearPress}>
-                <Text style={[styles.textButtons, { color: colors.red }]}>Limpar</Text>
+              <TouchableOpacity style={stylesLayoutId.button} onPress={handleClearPress}>
+                <Text style={[stylesLayoutId.textButtons, { color: colors.red }]}>Limpar</Text>
               </TouchableOpacity>
             </View>
           </View>
         </View>
       </Modal>
     </SafeAreaView>
-
   )
 }
 
-const styles = StyleSheet.create({
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: "800",
-  },
-  onlineStatus: {
-    marginTop: 5,
-    fontSize: 14,
-    fontWeight: "500",
-  },
-  containerInfor: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-  },
-  modalContainerItens: {
-    flexDirection: "column",
-    alignItems: "center",
-    padding: 10,
-    borderRadius: 10,
-    width: "60%",
-    minHeight: 100
-  },
-  modalContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  },
-  modalText: {
-    fontSize: 18,
-    fontWeight: "800",
-  },
-  buttonsContainer: {
-    flexDirection: "row",
-    marginTop: 20,
-    gap: 10,
-    alignItems: "flex-end",
-    justifyContent: "flex-end",
-    width: "100%",
-  },
-  button: {
-    padding: 10,
-    borderRadius: 5,
-  },
-  buttonCancele: {
-    padding: 10,
-    borderRadius: 5,
-  },
-  textButtons: {
-    fontSize: 16,
-    fontWeight: "600",
-  }
-})
 

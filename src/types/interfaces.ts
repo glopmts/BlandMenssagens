@@ -32,6 +32,8 @@ export interface Mensagens {
   is_deleted: boolean;
   hidden_by_sender?: boolean;
   hidden_by_receiver?: boolean;
+  deleted_at_receiver?: Date;
+  deleted_at_sender?: Date;
   contact_image?: string | null;
   images: string[]
   status: "send" | "delivered" | "read"

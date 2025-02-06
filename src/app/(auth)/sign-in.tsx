@@ -2,15 +2,21 @@ import { useTheme } from "@/hooks/useTheme"
 import { useSignIn } from "@clerk/clerk-expo"
 import { Link, router } from "expo-router"
 import { useState } from "react"
-import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native"
+import { ActivityIndicator, Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native"
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [isLoader, setLoader] = useState(false)
   const { signIn, setActive } = useSignIn()
   const { colors } = useTheme()
 
   const onLogin = async () => {
+    if (!email || !password) {
+      Alert.alert("Erro", "Preencha todos os campos.")
+      return
+    }
+    setLoader(true)
     try {
       const result = await signIn?.create({
         identifier: email,
@@ -30,6 +36,8 @@ export default function LoginScreen() {
     } catch (err: any) {
       console.error("Error:", err.message)
       Alert.alert("Erro", err.message || "Não foi possível fazer login.")
+    } finally {
+      setLoader(false)
     }
   }
 
@@ -59,7 +67,13 @@ export default function LoginScreen() {
           />
         </View>
         <TouchableOpacity style={[styles.button, { backgroundColor: colors.primary }]} onPress={onLogin}>
-          <Text style={[styles.buttonText, { color: colors.buttonText }]}>Login</Text>
+          <Text style={[styles.buttonText, { color: colors.buttonText }]}>
+            {isLoader ? (
+              <ActivityIndicator size={28} color={colors.primary} />
+            ) : (
+              "Login"
+            )}
+          </Text>
         </TouchableOpacity>
       </View>
       <View style={styles.bottomContainer}>

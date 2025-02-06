@@ -152,3 +152,19 @@ export const handleClearMenssagens = async (userId: string, chatWith: string) =>
     console.error("Error clearing messages:", error);
   }
 }
+
+
+export const handleChatUser = async (userId: string, chatWith: string) => {
+  try {
+    await fetch(`${url}/api/user/deleteChatUser`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ userId, chatWith }),
+    });
+    ToastAndroid.show("Mensagens limpas com sucesso!", ToastAndroid.SHORT);
+  } catch (error) {
+    console.error("Error clearing messages:", error);
+  }
+}

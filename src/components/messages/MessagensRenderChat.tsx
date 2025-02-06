@@ -1,9 +1,10 @@
-import { stylesChat } from "@/app/(pages)/menssagens/styles/stylesChat";
+import { stylesChat } from "@/app/styles/stylesChat";
 import { MessageProperties } from "@/types/interfaces";
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import React, { useEffect, useState } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
+import { detectLinks } from "../DetectLinksChat";
 import FullScreenImage from "../FullScreenImagem";
 import AudioPlayer from "./AudPlayButton";
 
@@ -44,7 +45,7 @@ export const MessageItem = React.memo(({ item, user, colors, imageUser, handleCo
         )}
         {item.legendImage && (
           <View style={stylesChat.imageCaption}>
-            <Text style={[stylesChat.messageText, { color: colors.text }]}>{item.legendImage}</Text>
+            <Text style={[stylesChat.messageText, { color: colors.text }]}>{detectLinks(item.legendImage)}</Text>
             <View style={{ flexDirection: 'row', gap: 4, alignItems: 'flex-end', justifyContent: 'flex-end' }}>
               <Text style={[stylesChat.timeText, { color: colors.text }]}>{messageTime}</Text>
               {item.sender_id === user?.id && (
@@ -103,7 +104,7 @@ export const MessageItem = React.memo(({ item, user, colors, imageUser, handleCo
           ]}
         >
           <Text style={[stylesChat.messageText, item.is_deleted && stylesChat.deletedMessage, { color: item.sender_id === user?.id ? "#fff" : colors.text }]}>
-            {item.content}
+            {detectLinks(item.content)}
           </Text>
           <View style={{ flexDirection: 'row', gap: 4, alignItems: 'flex-end', justifyContent: 'flex-end' }}>
             <Text style={[stylesChat.timeText, { color: colors.text }]}>{messageTime}</Text>

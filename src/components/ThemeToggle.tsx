@@ -9,7 +9,8 @@ export const ThemeToggle: React.FC = () => {
   return (
     <View style={styles.container}>
       <TouchableOpacity onPress={toggleTheme}>
-        {theme === 'dark' ? <MaterialIcons name="nightlight" size={24} color={colors.text} /> : <MaterialIcons name="light-mode" size={24} color={colors.text} />}
+        {theme === 'dark' ? <MaterialIcons name="nightlight"
+          size={24} color={colors.text} /> : <MaterialIcons name="light-mode" size={24} color={colors.text} />}
       </TouchableOpacity>
     </View>
   )

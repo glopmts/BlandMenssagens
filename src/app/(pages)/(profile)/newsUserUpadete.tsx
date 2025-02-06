@@ -7,7 +7,8 @@ import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { useState } from "react";
-import { Alert, Image, Platform, StyleSheet, Text, TextInput, ToastAndroid, TouchableOpacity, View } from "react-native";
+import { Alert, Image, Text, TextInput, ToastAndroid, TouchableOpacity, View } from "react-native";
+import { stylesUpdateProfile } from "./(styles)/stylesUploadProfile";
 
 export default function NewsUserUpdateProfile() {
   const { colors } = useTheme();
@@ -89,88 +90,31 @@ export default function NewsUserUpdateProfile() {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <Text style={[styles.title, { color: colors.text }]}>Atualize seu perfil antes de seguir!</Text>
-      {error && <Text style={[styles.error, { color: colors.error }]}>{error}</Text>}
-      <TouchableOpacity style={styles.imageContainer} onPress={pickImage}>
+    <View style={[stylesUpdateProfile.container, { backgroundColor: colors.background }]}>
+      <Text style={[stylesUpdateProfile.title, { color: colors.text }]}>Atualize seu perfil antes de seguir!</Text>
+      {error && <Text style={[stylesUpdateProfile.error, { color: colors.error }]}>{error}</Text>}
+      <TouchableOpacity style={stylesUpdateProfile.imageContainer} onPress={pickImage}>
         {image ? (
-          <Image source={{ uri: image }} style={styles.image} />
+          <Image source={{ uri: image }} style={stylesUpdateProfile.image} />
         ) : (
-          <View style={[styles.placeholderImage, { backgroundColor: colors.borderColor }]}>
-            <Text style={[styles.placeholderText, { color: colors.text }]}>Selecionar Imagem</Text>
+          <View style={[stylesUpdateProfile.placeholderImage, { backgroundColor: colors.borderColor }]}>
+            <Text style={[stylesUpdateProfile.placeholderText, { color: colors.text }]}>Selecionar Imagem</Text>
           </View>
         )}
       </TouchableOpacity>
 
       <TextInput
-        style={[styles.input, { color: colors.text, borderColor: colors.borderColor }]}
+        style={[stylesUpdateProfile.input, { color: colors.text, borderColor: colors.borderColor }]}
         placeholder="Seu nome"
         placeholderTextColor={'#999999'}
         value={name}
         onChangeText={setName}
       />
-      <TouchableOpacity style={[styles.button, { backgroundColor: colors.primary }]} onPress={handleSave}>
-        <Text style={[styles.buttonText, { color: colors.buttonText }]}>
+      <TouchableOpacity style={[stylesUpdateProfile.button, { backgroundColor: colors.primary }]} onPress={handleSave}>
+        <Text style={[stylesUpdateProfile.buttonText, { color: colors.buttonText }]}>
           {isLoaded ? "Atualizando..." : "Atualizar Perfil"}
         </Text>
       </TouchableOpacity>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingHorizontal: 20,
-    paddingVertical: 20,
-    paddingTop: Platform.OS === "ios" ? 60 : 80,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: "bold",
-    textAlign: "center",
-    marginBottom: 30,
-  },
-  imageContainer: {
-    alignItems: "center",
-    marginBottom: 20,
-  },
-  image: {
-    width: 150,
-    height: 150,
-    borderRadius: 75,
-  },
-  placeholderImage: {
-    width: 150,
-    height: 150,
-    borderRadius: 75,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  placeholderText: {
-    textAlign: "center",
-  },
-  input: {
-    height: 50,
-    borderWidth: 1,
-    borderRadius: 5,
-    paddingHorizontal: 10,
-    marginBottom: 20,
-    fontSize: 16,
-  },
-  button: {
-    height: 50,
-    borderRadius: 16,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  buttonText: {
-    fontSize: 18,
-    fontWeight: "bold",
-  },
-  error: {
-    marginTop: 10,
-    fontSize: 14,
-    textAlign: "center",
-  }
-});

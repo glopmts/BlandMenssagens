@@ -9,7 +9,7 @@ import { useRouter } from "expo-router";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, Alert, Image, Text, TextInput, ToastAndroid, TouchableOpacity, View } from "react-native";
-import { stylesUpdateProfile } from "./styles/stylesUploadProfile";
+import { stylesUpdateProfile } from "./(styles)/stylesUploadProfile";
 
 export default function UpdateProfile() {
   const { colors } = useTheme();

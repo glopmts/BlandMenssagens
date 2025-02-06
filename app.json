@@ -61,8 +61,8 @@
       [
         "expo-media-library",
         {
-          "photosPermission": "Allow $BlobSend to access your photos.",
-          "savePhotosPermission": "Allow $BlobSend to save photos.",
+          "photosPermission": "Allow $(BlobSend) to access your photos.",
+          "savePhotosPermission": "Allow $(BlobSend) to save photos.",
           "isAccessMediaLocationEnabled": true
         }
       ]

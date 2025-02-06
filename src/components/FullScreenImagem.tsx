@@ -1,4 +1,4 @@
-import { stylesChat } from "@/app/(pages)/menssagens/styles/stylesChat";
+import { stylesChat } from "@/app/styles/stylesChat";
 import React, { useState } from "react";
 import { Image, TouchableOpacity } from "react-native";
 import ImageViewing from "react-native-image-viewing";

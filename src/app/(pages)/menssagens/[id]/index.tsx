@@ -26,7 +26,7 @@ import {
   TouchableOpacity,
   View
 } from "react-native"
-import { stylesChat } from "../styles/stylesChat"
+import { stylesChat } from "../../../styles/stylesChat"
 
 export default function MensagensPageRender() {
   const { user } = useClerk()
