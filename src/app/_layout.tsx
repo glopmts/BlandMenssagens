@@ -39,7 +39,7 @@ function RootLayoutNav() {
   return (
     <>
       <StatusBar translucent={true} />
-      <GestureHandlerRootView style={{ flex: 1 }}>
+      <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.background }}>
         <PortalProvider>
           <Stack
             screenOptions={{

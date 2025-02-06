@@ -36,7 +36,8 @@ export const stylesListContacst = StyleSheet.create({
   },
   contactName: {
     fontSize: 18,
-    fontWeight: "bold",
+    fontWeight: "800",
+    marginBottom: 10,
   },
   noContactsContainer: {
     flex: 1,

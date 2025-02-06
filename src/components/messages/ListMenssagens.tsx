@@ -7,6 +7,7 @@ import { Image } from "expo-image";
 import { router } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, Alert, FlatList, RefreshControl, Text, TouchableOpacity, View } from "react-native";
+import Icon from 'react-native-vector-icons/FontAwesome';
 import io from "socket.io-client";
 
 const socket = io("http://192.168.18.8:5001");
@@ -149,9 +150,19 @@ function ListMensagens({ item, colors }: { item: Mensagens; colors: any }) {
         </View>
         {item.content ? (
           <Text style={[stylesListMenssagens.messageText, { color: colors.text }]}>{item.content}</Text>
-        ) : (
+        ) : item.legendImage ? (
           <Text style={[stylesListMenssagens.messageText, { color: colors.text }]}>{item.legendImage}</Text>
-        )}
+        ) : item.audioUrl ? (
+          <View style={stylesListMenssagens.imagePlaceholder}>
+            <Icon name="volume-up" size={14} color={colors.text} />
+            <Text style={stylesListMenssagens.imagePlaceholderText}>Enviou um áudio</Text>
+          </View>
+        ) : item.images ? (
+          <View style={stylesListMenssagens.imagePlaceholder}>
+            <Icon name="image" size={14} color={colors.text} />
+            <Text style={stylesListMenssagens.imagePlaceholderText}>Foto</Text>
+          </View>
+        ) : null}
       </View>
     </TouchableOpacity>
   );

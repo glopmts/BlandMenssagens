@@ -23,16 +23,16 @@ export default function ContactsScreen() {
         style={[stylesListContacst.contactItem, { backgroundColor: colors.cardColor }]}
         onPress={() => router.navigate(`/(pages)/menssagens/${item.contact_id}`)}
       >
-        {item?.imageurl ? (
-          <Image style={stylesListContacst.contactImage} source={{ uri: item?.imageurl }} />
+        {item?.image ? (
+          <Image style={stylesListContacst.contactImage} source={{ uri: item?.image }} />
         ) : (
           <View style={[stylesListContacst.contactImage, { backgroundColor: colors.primary }]}>
-            <Text style={{ color: "white", fontWeight: "700", fontSize: 20 }}>{item?.name?.charAt(0)}</Text>
+            <Text style={{ color: "white", fontWeight: "800", fontSize: 20 }}>{item?.name?.charAt(0)}</Text>
           </View>
         )}
         <View>
           <Text style={[stylesListContacst.contactName, { color: colors.text }]}>{item?.name || "Nome não disponível"}</Text>
-          <Text style={[stylesListContacst.contactName, { color: colors.text }]}>{lastSeenText}</Text>
+          <Text style={[{ color: colors.gray }]}>{lastSeenText}</Text>
         </View>
       </TouchableOpacity>
     )

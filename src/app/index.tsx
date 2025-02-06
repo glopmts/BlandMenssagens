@@ -29,7 +29,7 @@ export default function AppRoot() {
 
   if (!isReady) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: '#1E1E1E' }}>
         <ActivityIndicator size={28} color="#1E90FF" />
       </View>
     );

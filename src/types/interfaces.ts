@@ -29,7 +29,9 @@ export interface Mensagens {
   content: string
   legendImage?: string,
   created_at: string
-  is_deleted: boolean
+  is_deleted: boolean;
+  hidden_by_sender?: boolean;
+  hidden_by_receiver?: boolean;
   contact_image?: string | null;
   images: string[]
   status: "send" | "delivered" | "read"

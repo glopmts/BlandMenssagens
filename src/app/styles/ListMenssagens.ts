@@ -64,4 +64,14 @@ export const stylesListMenssagens = StyleSheet.create({
     justifyContent: "space-between",
     marginBottom: 5,
   },
+  imagePlaceholder: {
+    borderRadius: 8,
+    flexDirection: 'row',
+    alignItems: "center",
+    gap: 5
+  },
+  imagePlaceholderText: {
+    color: "#555",
+    fontSize: 15,
+  },
 });

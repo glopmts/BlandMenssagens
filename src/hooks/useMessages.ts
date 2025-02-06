@@ -31,11 +31,14 @@ export function useMessages(chatId: string, userId: string) {
       try {
         const res = await fetch(`${url}/api/user/menssagens/${userId}`);
         if (!res.ok) throw new Error("Erro ao buscar mensagens");
+
         const data = await res.json();
-        const filteredMessages = data.map((msg: Mensagens) => ({
-          ...msg,
-          content: msg.is_deleted ? "" : msg.content,
-        }));
+
+        const filteredMessages = data.filter((msg: Mensagens) => {
+          if (msg.hidden_by_sender && msg.sender_id === userId) return false;
+          if (msg.hidden_by_receiver && msg.receiver_id === userId) return false;
+          return true;
+        });
 
         setMessages(filteredMessages);
       } catch (error) {
@@ -44,8 +47,10 @@ export function useMessages(chatId: string, userId: string) {
         setLoading(false);
       }
     }
+
     fetchMessages();
   }, [userId]);
+
 
   const updateMessageStatus = async (messageId: string, status: string) => {
     try {
@@ -113,7 +118,6 @@ export function useMessages(chatId: string, userId: string) {
     );
   };
 
-
   const sendMessage = (content: string, legendImage: string, imageUrl: string[] = [], audioUrl?: string) => {
     const newMessage: Mensagens = {
       id: Date.now().toString(),
@@ -132,4 +136,19 @@ export function useMessages(chatId: string, userId: string) {
 
 
   return { messages, loading, sendMessage, handleDeleteMessage, updateMessageStatus };
+}
+
+export const handleClearMenssagens = async (userId: string, chatWith: string) => {
+  try {
+    await fetch(`${url}/api/user/clearChatForUser`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ userId, chatWith }),
+    });
+    ToastAndroid.show("Mensagens limpas com sucesso!", ToastAndroid.SHORT);
+  } catch (error) {
+    console.error("Error clearing messages:", error);
+  }
 }
