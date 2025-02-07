@@ -1,11 +1,10 @@
 import { useTheme } from '@/hooks/useTheme';
-import { Ionicons } from '@expo/vector-icons'; // Importe o ícone de lupa
-import { Stack, useNavigation } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { Stack } from 'expo-router';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 export default function TabLayout() {
   const { colors } = useTheme();
-  const navigation = useNavigation()
 
   const handleSearchPress = () => {
     alert('Lupa pressionada!');

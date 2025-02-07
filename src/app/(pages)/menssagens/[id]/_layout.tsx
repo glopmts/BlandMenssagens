@@ -1,4 +1,4 @@
-import DropwMenu from "@/components/DropwMenu"
+import DropwMenu from "@/components/drawer/DropwMenu"
 import { handleChatUser, handleClearMenssagens } from "@/hooks/useMessages"
 import { useTheme } from "@/hooks/useTheme"
 import { url } from "@/utils/url-api"

@@ -7,9 +7,9 @@ import { DrawerContentComponentProps } from "@react-navigation/drawer";
 import { router } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { Alert, Animated, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import LinksOptionsDrawer from "../LinksOptionsDrawer";
+import Sidebar from "../SidebarProfile";
 import UserInforDrawer from "./DrawerIUserHeader";
-import LinksOptionsDrawer from "./LinksOptionsDrawer";
-import Sidebar from "./SidebarProfile";
 
 export function DrawerContent(drawerProps: DrawerContentComponentProps) {
   const { colors } = useTheme();

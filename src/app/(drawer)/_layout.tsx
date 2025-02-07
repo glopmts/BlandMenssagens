@@ -1,4 +1,4 @@
-import { DrawerContent } from '@/components/DrawerContent';
+import { DrawerContent } from '@/components/drawer/DrawerContent';
 import { useTheme } from '@/hooks/useTheme';
 import { Drawer } from 'expo-router/drawer';
 
