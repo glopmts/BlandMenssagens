@@ -1,50 +1,73 @@
-# Welcome to your Expo app 👋
+# 📱 App de Mensagens
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Bem-vindo ao **App de Mensagens**, um aplicativo desenvolvido com **Expo**, **TypeScript**, **Firebase**, **Clerk**, **PostgreSQL** e **Node.js** para oferecer uma experiência moderna e segura de troca de mensagens.
 
-## Get started
+## 🚀 Tecnologias Utilizadas
 
-1. Install dependencies
+- **Expo**: Framework para desenvolvimento de apps React Native.
+- **TypeScript**: Linguagem para tipagem estática em JavaScript.
+- **Firebase**: Utilizado para notificações push e armazenamento de arquivos (como mensagens de áudio).
+- **Clerk**: Gerenciamento de autenticação e usuários.
+- **PostgreSQL**: Banco de dados relacional para armazenar as mensagens.
+- **Node.js + Express**: Backend para processamento de mensagens e integração com o banco de dados.
 
-   ```bash
-   npm install
-   ```
+## 📦 Configuração e Instalação
 
-2. Start the app
-
-   ```bash
-    npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
+### 1️⃣ Clonar o repositório
 ```bash
-npm run reset-project
+  git clone https://github.com/seu-usuario/seu-repositorio.git
+  cd seu-repositorio
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+### 2️⃣ Instalar dependências
+```bash
+  npm install
+```
 
-## Learn more
+### 3️⃣ Configurar variáveis de ambiente
+Crie um arquivo **.env** na raiz do projeto e adicione as seguintes configurações:
+```env
+EXPO_PUBLIC_FIREBASE_API_KEY=...
+EXPO_PUBLIC_CLERK_FRONTEND_API=...
+EXPO_PUBLIC_POSTGRES_URL=...
+EXPO_PUBLIC_SERVER_URL=http://localhost:3000
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+### 4️⃣ Iniciar o backend
+Antes de rodar o app, certifique-se de que o backend está rodando:
+```bash
+  cd backend
+  npm install
+  npm run dev
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+### 5️⃣ Rodar o app
+```bash
+  npx expo start
+```
 
-## Join the community
+## 🔑 Autenticação com Clerk
+O **Clerk** é responsável pelo gerenciamento de autenticação. O usuário pode se registrar usando e-mail e senha ou login social.
 
-Join our community of developers creating universal apps.
+## 📡 Envio de Mensagens
+- As mensagens são armazenadas no **PostgreSQL**.
+- As mensagens de áudio são salvas no **Firebase Storage**.
+- As notificações push são gerenciadas pelo **Firebase Cloud Messaging (FCM)**.
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## 📌 Funcionalidades
+✅ Autenticação de usuários via **Clerk**  
+✅ Envio e recebimento de mensagens em tempo real  
+✅ Suporte a envio de mensagens de **texto** e **áudio**  
+✅ Notificações push com **Firebase Cloud Messaging**  
+✅ Interface responsiva para Android e iOS  
+
+## 🤝 Contribuição
+Fique à vontade para abrir issues e pull requests. Toda contribuição é bem-vinda!
+
+## 📜 Licença
+Este projeto está sob a licença **MIT**.
+
+---
+
+💡 Desenvolvido com ❤️ usando **Expo, Node.js e PostgreSQL**.
+
