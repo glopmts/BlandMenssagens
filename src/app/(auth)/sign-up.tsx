@@ -1,11 +1,12 @@
+import PasswordInput from "@/components/PasswordInput";
 import { useTheme } from "@/hooks/useTheme";
 import { url } from "@/utils/url-api";
 import { useSignUp } from "@clerk/clerk-expo";
-import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { ActivityIndicator, Alert, Animated, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Alert, Animated, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { stylesInputs } from "../styles/StylesInputs";
 
 export default function SignUp() {
   const { signUp, setActive, isLoaded } = useSignUp();
@@ -109,14 +110,14 @@ export default function SignUp() {
   const handleShowPreview = () => setIsPreview(!isPreview);
 
   return (
-    <LinearGradient colors={["#4d4949", "#2f2f2f", "#323131"]} style={styles.container}>
-      <Animated.View style={styles.formContainer}>
-        <Text style={[styles.title, { color: colors.text }]}>Crie sua conta</Text>
-        <View style={styles.inputs}>
+    <LinearGradient colors={["#4d4949", "#2f2f2f", "#323131"]} style={stylesInputs.container}>
+      <Animated.View style={stylesInputs.formContainer}>
+        <Text style={[stylesInputs.title, { color: colors.text }]}>Crie sua conta</Text>
+        <View style={stylesInputs.inputs}>
           {!pendingVerification ? (
             <>
               <TextInput
-                style={[styles.input, { color: colors.text }]}
+                style={[stylesInputs.input, { color: colors.text }]}
                 placeholder="Email"
                 placeholderTextColor={colors.gray}
                 value={email}
@@ -124,22 +125,9 @@ export default function SignUp() {
                 keyboardType="email-address"
                 autoCapitalize="none"
               />
-              <View style={styles.passwordInput}>
-                <TextInput
-                  style={[styles.input, { color: colors.text }]}
-                  placeholder="Senha"
-                  placeholderTextColor={colors.gray}
-                  value={password}
-                  onChangeText={setPassword}
-                  keyboardType={isPreview ? 'visible-password' : 'ascii-capable'}
-                  secureTextEntry
-                />
-                <TouchableOpacity style={[styles.buttonPassword]} onPress={handleShowPreview} disabled={loader}>
-                  {loader ? <ActivityIndicator color={colors.buttonText} /> : <Ionicons name={isPreview ? 'eye' : 'eye-off-outline'} size={24} color="#fffc" />}
-                </TouchableOpacity>
-              </View>
+              <PasswordInput loader={loader} password={password} setPassword={setPassword} />
               <TextInput
-                style={[styles.input, { color: colors.text }]}
+                style={[stylesInputs.input, { color: colors.text }]}
                 placeholder="Numero de telefone"
                 placeholderTextColor={colors.gray}
                 value={phone}
@@ -147,22 +135,22 @@ export default function SignUp() {
                 keyboardType="phone-pad"
                 textContentType="telephoneNumber"
               />
-              <TouchableOpacity style={[styles.button, { backgroundColor: colors.primary }]} onPress={handleSignUp} disabled={loader}>
-                {loader ? <ActivityIndicator color={colors.buttonText} /> : <Text style={styles.buttonText}>Criar conta</Text>}
+              <TouchableOpacity style={[stylesInputs.button, { backgroundColor: colors.primary }]} onPress={handleSignUp} disabled={loader}>
+                {loader ? <ActivityIndicator color={colors.buttonText} /> : <Text style={stylesInputs.buttonText}>Criar conta</Text>}
               </TouchableOpacity>
             </>
           ) : (
             <>
               <TextInput
-                style={[styles.input, { color: colors.text }]}
+                style={[stylesInputs.input, { color: colors.text }]}
                 placeholder="Código de verificação"
                 placeholderTextColor={colors.gray}
                 value={code}
                 onChangeText={setCode}
                 keyboardType="number-pad"
               />
-              <TouchableOpacity style={[styles.button, { backgroundColor: colors.primary }]} onPress={handleVerifyEmail} disabled={loader}>
-                {loader ? <ActivityIndicator color={colors.buttonText} /> : <Text style={styles.buttonText}>Verificar Email</Text>}
+              <TouchableOpacity style={[stylesInputs.button, { backgroundColor: colors.primary }]} onPress={handleVerifyEmail} disabled={loader}>
+                {loader ? <ActivityIndicator color={colors.buttonText} /> : <Text style={stylesInputs.buttonText}>Verificar Email</Text>}
               </TouchableOpacity>
             </>
           )}
@@ -171,26 +159,3 @@ export default function SignUp() {
     </LinearGradient>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: "center", alignItems: "center", padding: 20 },
-  formContainer: { width: "100%", maxWidth: 400 },
-  title: { fontSize: 24, fontWeight: "bold", marginBottom: 20, textAlign: "center" },
-  inputs: { marginBottom: 20 },
-  input: { height: 50, borderWidth: 1, borderRadius: 10, paddingHorizontal: 15, marginBottom: 15, fontSize: 16 },
-  button: { height: 50, borderRadius: 25, justifyContent: "center", alignItems: "center" },
-  buttonText: { fontSize: 18, fontWeight: "bold" },
-  passwordInput: {
-    position: 'relative'
-  },
-  buttonPassword: {
-    position: 'absolute',
-    top: 0,
-    right: 10,
-    height: 50,
-    width: 50,
-    borderRadius: 25,
-    justifyContent: 'center',
-    alignItems: 'center'
-  }
-});

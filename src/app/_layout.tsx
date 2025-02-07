@@ -1,6 +1,3 @@
-import { ThemeProvider } from '@/context/ThemeContext';
-import { useTheme } from '@/hooks/useTheme';
-import { tokenCache } from '@/utils/cache';
 import { ClerkLoaded, ClerkProvider } from '@clerk/clerk-expo';
 import { PortalProvider } from '@gorhom/portal';
 import { useFonts } from 'expo-font';
@@ -8,20 +5,18 @@ import * as Notifications from "expo-notifications";
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import React, { useEffect } from 'react';
-import 'react-native-gesture-handler';
+import React, { useCallback, useEffect, useState } from 'react';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import 'react-native-reanimated';
+
+import ErrorBoundary from '@/components/ErrorBoundary';
+import { ThemeProvider } from '@/context/ThemeContext';
+import { useTheme } from '@/hooks/useTheme';
+import { tokenCache } from '@/utils/cache';
 
 SplashScreen.preventAutoHideAsync();
 
 const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY!;
-
-if (!publishableKey) {
-  throw new Error(
-    'Missing Publishable Key. Please set EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY in your .env',
-  );
-}
 
 Notifications.setNotificationHandler({
   handleNotification: async (notification) => {
@@ -34,28 +29,47 @@ Notifications.setNotificationHandler({
   },
 });
 
+const LoadingScreen = () => {
+  const { colors } = useTheme();
+
+  return (
+    <View style={[styles.loadingContainer, { backgroundColor: colors.background }]}>
+      <ActivityIndicator size="large" color={colors.text} />
+    </View>
+  );
+};
+
 function RootLayoutNav() {
   const { colors } = useTheme();
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  const onLayoutRootView = useCallback(async () => {
+    if (isLoaded) {
+      await SplashScreen.hideAsync();
+    }
+  }, [isLoaded]);
+
+  useEffect(() => {
+    setTimeout(() => setIsLoaded(true), 1000);
+  }, []);
+
+  if (!isLoaded) {
+    return <LoadingScreen />;
+  }
+
   return (
     <>
       <StatusBar />
-      <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.background }}>
+      <GestureHandlerRootView style={styles.flex} onLayout={onLayoutRootView}>
         <PortalProvider>
           <Stack
             screenOptions={{
-              headerStyle: {
-                backgroundColor: colors.background,
-              },
-              headerTintColor: colors.text,
-              contentStyle: { backgroundColor: colors.background },
               headerShown: false,
             }}
           >
             <Stack.Screen name='index' />
-            <Stack.Screen name="(drawer)" />
-            <Stack.Screen name="(auth)" />
-            <Stack.Screen name="(pages)" />
-            <Stack.Screen name="+not-found" />
+            <Stack.Screen name='(drawer)/(tabs)' />
+            <Stack.Screen name='(auth)' />
           </Stack>
         </PortalProvider>
       </GestureHandlerRootView>
@@ -64,27 +78,40 @@ function RootLayoutNav() {
 }
 
 export default function RootLayout() {
-  const [fontsLoaded, fontError] = useFonts({
+  const [fontsLoaded] = useFonts({
     SpaceMono: require('../../assets/fonts/SpaceMono-Regular.ttf'),
   });
 
   useEffect(() => {
-    if (fontsLoaded || fontError) {
+    if (fontsLoaded) {
       SplashScreen.hideAsync();
     }
-  }, [fontsLoaded, fontError]);
+  }, [fontsLoaded]);
 
-  if (!fontsLoaded && !fontError) {
+  if (!fontsLoaded) {
     return null;
   }
 
   return (
-    <ThemeProvider>
-      <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
-        <ClerkLoaded>
-          <RootLayoutNav />
-        </ClerkLoaded>
-      </ClerkProvider>
-    </ThemeProvider>
+    <ErrorBoundary>
+      <ThemeProvider>
+        <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
+          <ClerkLoaded>
+            <RootLayoutNav />
+          </ClerkLoaded>
+        </ClerkProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
   );
 }
+
+const styles = StyleSheet.create({
+  flex: {
+    flex: 1,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+});

@@ -166,7 +166,7 @@ export const stylesChat = StyleSheet.create({
   },
   optionsButton: {
     position: "absolute",
-    top: 3,
+    top: -30,
     zIndex: 150,
     backgroundColor: "rgba(0, 0, 0, 0.5)",
     borderRadius: 16,

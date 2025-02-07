@@ -1,16 +1,14 @@
 import { stylesListMenssagens } from "@/app/styles/ListMenssagens";
 import { useTheme } from "@/hooks/useTheme";
+import { socket } from "@/server/socket-io";
 import { Mensagens } from "@/types/interfaces";
 import { url } from "@/utils/url-api";
 import { useUser } from "@clerk/clerk-expo";
-import { Image } from "expo-image";
 import { router } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, Alert, FlatList, RefreshControl, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Alert, FlatList, Image, RefreshControl, Text, TouchableOpacity, View } from "react-native";
 import Icon from 'react-native-vector-icons/FontAwesome';
-import io from "socket.io-client";
 
-const socket = io("http://192.168.18.8:5001");
 
 export default function MensagensList() {
   const { user } = useUser();
@@ -57,7 +55,6 @@ export default function MensagensList() {
     fetchMensagens(user.id);
 
     socket.on(`chat:${user.id}`, (novaMensagem: Mensagens) => {
-      console.log("Nova mensagem recebida:", novaMensagem);
 
       setMensagens((mensagensAtuais) => {
         const mensagensAtualizadas = [...mensagensAtuais, novaMensagem];
@@ -114,50 +111,49 @@ export default function MensagensList() {
   );
 }
 
-function ListMensagens({ item, colors }: { item: Mensagens; colors: any }) {
-  const { user } = useUser();
-  const lastSeenText = item.created_at
-    ? new Date(item.created_at).toLocaleString()
-    : "Never seen";
+interface ListMensagensProps {
+  item: Mensagens
+  colors: any
+}
 
-  const isSender = item.sender_id === user?.id;
-  const contact = isSender ? item.receiver : item.sender;
-  const contactImage = contact.imageurl;
-  const contactName = contact.name;
 
-  const renderImage = contactImage ? (
-    <Image source={{ uri: contactImage }} style={stylesListMenssagens.contactImage} />
-  ) : (
-    <View style={[stylesListMenssagens.contactInitial, { backgroundColor: colors.primary }]}>
-      {contactName ? (
-        <Text style={stylesListMenssagens.contactInitialText}>
-          {contactName ? contactName.charAt(0).toUpperCase() : "BL"}
-        </Text>
-      ) : (
-        <Text style={stylesListMenssagens.contactInitialText}>
-          BL
-        </Text>
-      )}
-    </View>
-  );
+function ListMensagens({ item, colors }: ListMensagensProps) {
+  const { user } = useUser()
+  const lastSeenText = item.created_at ? new Date(item.created_at).toLocaleString() : "Never seen"
+
+  const isSender = item.sender_id === user?.id
+  const contact = isSender ? item.receiver : item.sender
+  const contactImage = contact.imageurl
+  const contactName = contact.name || "Unknown"
+
+  const renderContactImage = () => {
+    if (contactImage) {
+      return <Image source={{ uri: contactImage }} style={stylesListMenssagens.contactImage} />
+    } else {
+      const initial = contactName.charAt(0).toUpperCase()
+      return (
+        <View style={[stylesListMenssagens.contactInitial, { backgroundColor: colors.primary }]}>
+          <Text style={stylesListMenssagens.contactInitialText}>{initial}</Text>
+        </View>
+      )
+    }
+  }
 
   return (
     <TouchableOpacity
       style={stylesListMenssagens.messagesItem}
       onPress={() => router.navigate(`/(pages)/menssagens/${contact.clerk_id}`)}
     >
-      {renderImage}
+      {renderContactImage()}
       <View style={stylesListMenssagens.contaInfo}>
         <View style={stylesListMenssagens.namesDate}>
-          <Text style={[stylesListMenssagens.contactName, { color: colors.text }]}>
-            {contactName || "Name not found"}
-          </Text>
+          <Text style={[stylesListMenssagens.contactName, { color: colors.text }]}>{contactName}</Text>
           <Text style={stylesListMenssagens.lastSeen}>{lastSeenText}</Text>
         </View>
         {item.content ? (
-          <Text style={[stylesListMenssagens.messageText, { color: colors.text }]}>{item.content}</Text>
+          <Text dataDetectorType="all" numberOfLines={2} style={[stylesListMenssagens.messageText, { color: colors.text }]}>{item.content}</Text>
         ) : item.legendImage ? (
-          <Text style={[stylesListMenssagens.messageText, { color: colors.text }]}>{item.legendImage}</Text>
+          <Text dataDetectorType="all" numberOfLines={2} style={[stylesListMenssagens.messageText, { color: colors.text }]}>{item.legendImage}</Text>
         ) : item.audioUrl ? (
           <View style={stylesListMenssagens.imagePlaceholder}>
             <Icon name="volume-up" size={14} color={colors.text} />
@@ -171,5 +167,5 @@ function ListMensagens({ item, colors }: { item: Mensagens; colors: any }) {
         ) : null}
       </View>
     </TouchableOpacity>
-  );
+  )
 }

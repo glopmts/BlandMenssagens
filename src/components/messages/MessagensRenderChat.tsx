@@ -60,6 +60,8 @@ export const MessageItem = React.memo(({ item, user, colors, imageUser, handleCo
     );
   };
 
+
+
   return (
     <TouchableOpacity
       onLongPress={() => setSelectedMessageId(item.id)}
@@ -100,11 +102,11 @@ export const MessageItem = React.memo(({ item, user, colors, imageUser, handleCo
         <View
           style={[
             stylesChat.messageBubble,
-            { backgroundColor: item.sender_id === user?.id ? colors.primary : colors.card },
+            { backgroundColor: item.sender_id === user?.id ? colors.sendchatCorlo : colors.card },
           ]}
         >
-          <Text style={[stylesChat.messageText, item.is_deleted && stylesChat.deletedMessage, { color: item.sender_id === user?.id ? "#fff" : colors.text }]}>
-            {detectLinks(item.content)}
+          <Text dataDetectorType="all" style={[stylesChat.messageText, item.is_deleted && stylesChat.deletedMessage, { color: item.sender_id === user?.id ? "#fff" : colors.text }]}>
+            {item.content}
           </Text>
           <View style={{ flexDirection: 'row', gap: 4, alignItems: 'flex-end', justifyContent: 'flex-end' }}>
             <Text style={[stylesChat.timeText, { color: colors.text }]}>{messageTime}</Text>

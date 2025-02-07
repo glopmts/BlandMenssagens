@@ -4,6 +4,7 @@ import { url } from "@/utils/url-api";
 import { useAuth, useUser } from "@clerk/clerk-expo";
 import { MaterialIcons } from "@expo/vector-icons";
 import { DrawerContentComponentProps } from "@react-navigation/drawer";
+import { router } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { Alert, Animated, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import UserInforDrawer from "./DrawerIUserHeader";
@@ -54,7 +55,8 @@ export function DrawerContent(drawerProps: DrawerContentComponentProps) {
 
   const signOutUser = async () => {
     await signOut()
-    drawerProps.navigation.closeDrawer()
+    drawerProps.navigation.closeDrawer();
+    router.push("/(auth)/sign-in")
   }
 
   return (

@@ -13,30 +13,34 @@ export default function ContactsScreen() {
   const userId = user?.id || "";
   const { contacts, commercialContacts, error, isLoading, onRefresh, refreshing } = ContactsListUser({ userId });
 
+
   const ContactListItem = ({ item, colors, router }: any) => {
     const lastSeenText = item?.lastOnline
       ? new Date(item.lastOnline).toLocaleString()
       : "Nunca visto";
+
+    const contactImage = item.imageurl || item.image
+    const contactName = item.name || "Unknown"
+
+    const renderContactImage = () => {
+      if (contactImage) {
+        return <Image source={{ uri: contactImage }} style={stylesListContacst.contactImage} />
+      } else {
+        const initial = contactName.charAt(0).toUpperCase()
+        return (
+          <View style={[stylesListContacst.contactImage, { backgroundColor: colors.primary }]}>
+            <Text style={stylesListContacst.noContactsText}>{initial}</Text>
+          </View>
+        )
+      }
+    }
 
     return (
       <TouchableOpacity
         style={[stylesListContacst.contactItem, { backgroundColor: colors.cardColor }]}
         onPress={() => router.navigate(`/(pages)/menssagens/${item.contact_id}`)}
       >
-        {item?.image ? (
-          <Image style={stylesListContacst.contactImage} source={{ uri: item.image }} />
-        ) : item?.name ? (
-          <View style={[stylesListContacst.contactImage, { backgroundColor: colors.primary }]}>
-            <Text style={{ color: "white", fontWeight: "800", fontSize: 20 }}>
-              {item.name.charAt(0)}
-            </Text>
-          </View>
-        ) : (
-          <Image
-            style={stylesListContacst.contactImage}
-            source={{ uri: 'https://i.pinimg.com/1200x/d4/8f/8f/d48f8f59f2de25750b13084b59301201.jpg' }}
-          />
-        )}
+        {renderContactImage()}
         <View>
           <Text style={[stylesListContacst.contactName, { color: colors.text }]}>{item?.name || "Nome não disponível"}</Text>
           <Text style={[{ color: colors.gray }]}>{lastSeenText}</Text>

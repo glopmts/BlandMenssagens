@@ -1,3 +1,4 @@
+import PasswordInput from "@/components/PasswordInput"
 import { useTheme } from "@/hooks/useTheme"
 import { useSignIn } from "@clerk/clerk-expo"
 import { Link, router } from "expo-router"
@@ -56,20 +57,12 @@ export default function LoginScreen() {
             textContentType="emailAddress"
             autoCapitalize="none"
           />
-          <TextInput
-            style={[styles.input, { color: colors.text, borderColor: colors.borderColor }]}
-            placeholder="Senha"
-            placeholderTextColor={colors.gray}
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            textContentType="password"
-          />
+          <PasswordInput password={password} setPassword={setPassword} />
         </View>
         <TouchableOpacity style={[styles.button, { backgroundColor: colors.primary }]} onPress={onLogin}>
           <Text style={[styles.buttonText, { color: colors.buttonText }]}>
             {isLoader ? (
-              <ActivityIndicator size={28} color={colors.primary} />
+              <ActivityIndicator size={28} color={colors.text} />
             ) : (
               "Login"
             )}

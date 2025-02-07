@@ -14,7 +14,7 @@ export default function LayoutProfile() {
 
   if (isLoader) {
     return (
-      <View style={styles.container}>
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
         <ActivityIndicator size={28} color={colors.text} />
       </View>
     );
@@ -24,7 +24,7 @@ export default function LayoutProfile() {
       <Stack
         screenOptions={{
           headerStyle: {
-            backgroundColor: colors.backgroundColorHeader,
+            backgroundColor: colors.background,
           },
           headerTintColor: colors.text,
           headerTitleStyle: {

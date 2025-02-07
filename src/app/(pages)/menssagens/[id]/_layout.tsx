@@ -104,7 +104,7 @@ export default function MensagensLayout() {
       return;
     }
     await handleChatUser(userId!, chatWith)
-    router.push("/(drawer)/(tabs)")
+    router.navigate("/(drawer)/(tabs)")
   }
 
   return (

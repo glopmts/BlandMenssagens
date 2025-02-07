@@ -12,10 +12,11 @@ import { useClerk } from "@clerk/clerk-expo"
 import { Ionicons } from "@expo/vector-icons"
 import * as Clipboard from "expo-clipboard"
 import { Image } from "expo-image"
+import * as ImageManipulator from "expo-image-manipulator"
 import * as ImagePicker from "expo-image-picker"
 import { useLocalSearchParams } from "expo-router"
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage"
-import React, { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import {
   ActivityIndicator,
   FlatList,
@@ -24,7 +25,7 @@ import {
   TextInput,
   ToastAndroid,
   TouchableOpacity,
-  View
+  View,
 } from "react-native"
 import { stylesChat } from "../../../styles/stylesChat"
 
@@ -40,71 +41,91 @@ export default function MensagensPageRender() {
   const flatListRef = useRef<FlatList>(null)
   const [phoneNumber, setPhoneNumber] = useState<string | null>(null)
   const [imageUser, setImage] = useState<string | null>(null)
-  const contactId = messages.find((d) => user?.id === d.receiver_id)?.sender_id;
+  const contactId = messages.find((d) => user?.id === d.receiver_id)?.sender_id
 
   useEffect(() => {
     const fetchData = async () => {
-      const response = await fetch(`${url}/api/user/${contactId}`);
+      const response = await fetch(`${url}/api/user/${contactId}`)
       if (!response.ok) {
-        throw new Error("Failed to fetch user data");
+        throw new Error("Failed to fetch user data")
       }
-      const userData = await response.json();
-      setPhoneNumber(userData.phone);
-      setImage(userData.imageurl);
+      const userData = await response.json()
+      setPhoneNumber(userData.phone)
+      setImage(userData.imageurl)
     }
-    fetchData();
+    fetchData()
   }, [contactId])
-
 
   const handleCopy = async (text: string, id: string, legendImage: string) => {
     try {
-      const copyText = legendImage ? `${text}\n${legendImage}` : text;
-      await Clipboard.setStringAsync(copyText);
-      ToastAndroid.show("Mensagem copiada!", ToastAndroid.SHORT);
+      const copyText = legendImage ? `${text}\n${legendImage}` : text
+      await Clipboard.setStringAsync(copyText)
+      ToastAndroid.show("Mensagem copiada!", ToastAndroid.SHORT)
     } catch (error) {
-      console.error("Erro ao copiar para a área de transferência:", error);
+      console.error("Erro ao copiar para a área de transferência:", error)
     }
-  };
-
+  }
 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       quality: 1,
+      allowsEditing: false,
+      aspect: [4, 3],
       allowsMultipleSelection: true,
     })
 
     if (!result.canceled && result.assets.length > 0) {
-      setIsUploading(true)
-      try {
-        const uploadedUrls = await Promise.all(
-          result.assets.map(async (asset) => {
-            const response = await fetch(asset.uri)
-            const blob = await response.blob()
+      const compressedImages = await Promise.all(
+        result.assets.map(async (asset) => {
+          const manipResult = await ImageManipulator.manipulateAsync(asset.uri, [{ resize: { width: 800 } }], {
+            compress: 0.7,
+            format: ImageManipulator.SaveFormat.JPEG,
+          })
+          return manipResult.uri
+        }),
+      )
+      setImageUrl(compressedImages)
+    }
+  }
 
-            const storageRef = ref(
-              storage,
-              `app-menssagens/chat-images/${Date.now()}-${user?.id}-${Math.random().toString(36).substring(7)}`,
-            )
-            await uploadBytes(storageRef, blob)
-            return getDownloadURL(storageRef)
-          }),
-        )
-        setImageUrl(uploadedUrls)
-      } catch (error) {
-        console.error("Error uploading images:", error)
-        ToastAndroid.show("Error uploading images", ToastAndroid.SHORT)
-      } finally {
-        setIsUploading(false)
-      }
+  const uploadImage = async (uris: string[]) => {
+    try {
+      setIsUploading(true)
+      const uploadedUrls = await Promise.all(
+        uris.map(async (uri) => {
+          const response = await fetch(uri)
+          const blob = await response.blob()
+          const storageRef = ref(
+            storage,
+            `app-menssagens/chat-images/${Date.now()}-${user?.id}-${Math.random().toString(36).substring(7)}`,
+          )
+          await uploadBytes(storageRef, blob)
+          return getDownloadURL(storageRef)
+        }),
+      )
+      return uploadedUrls
+    } catch (error) {
+      console.error("Error uploading images:", error)
+      ToastAndroid.show("Error uploading images", ToastAndroid.SHORT)
+      return []
+    } finally {
+      setIsUploading(false)
     }
   }
 
   const handleSend = async () => {
     if (!newMessage.trim() && (!imageUrl || imageUrl.length === 0)) return
-    await sendMessage(newMessage, legendImage, imageUrl ?? [])
+
+    let uploadedImageUrls: string[] = []
+    if (imageUrl.length > 0) {
+      uploadedImageUrls = await uploadImage(imageUrl)
+    }
+
+    await sendMessage(newMessage, legendImage, uploadedImageUrls)
     setNewMessage("")
     setImageUrl([])
+    setLegendImage("")
     Keyboard.dismiss()
     flatListRef.current?.scrollToEnd({ animated: true })
   }
@@ -129,16 +150,16 @@ export default function MensagensPageRender() {
 
   const closeImage = async () => {
     try {
-      await Promise.all(imageUrl.map((url) => deleteOldImage(url)));
+      await Promise.all(imageUrl.map((url) => deleteOldImage(url)))
 
-      setImageUrl([]);
-      setLegendImage("");
-      ToastAndroid.show("Imagem removida!", ToastAndroid.SHORT);
+      setImageUrl([])
+      setLegendImage("")
+      ToastAndroid.show("Imagem removida!", ToastAndroid.SHORT)
     } catch (error) {
-      console.error("Erro ao excluir imagem:", error);
-      ToastAndroid.show("Erro ao remover imagem", ToastAndroid.SHORT);
+      console.error("Erro ao excluir imagem:", error)
+      ToastAndroid.show("Erro ao remover imagem", ToastAndroid.SHORT)
     }
-  };
+  }
 
   if (loading) {
     return (
@@ -164,14 +185,14 @@ export default function MensagensPageRender() {
       updateMessageStatus={updateMessageStatus}
       deleteMessage={(messageId) => handleDeleteMessage(messageId, item.created_at, user?.id!, item.audioUrl)}
     />
-  );
+  )
 
   return (
     <View style={[stylesChat.container, { backgroundColor: colors.background }]}>
       <View style={[stylesChat.header, { borderBottomColor: colors.borderColor }]}>
         <Text style={[stylesChat.headerText, { color: colors.gray }]}>
-          As menssagens são protegidas com a criptografia de ponta a ponta
-          e ficam somente entre você e os participantes desta conversa.
+          As menssagens são protegidas com a criptografia de ponta a ponta e ficam somente entre você e os participantes
+          desta conversa.
         </Text>
         <View>
           <NoAddContact number={phoneNumber!} contactId={id!} userId={user?.id!} />
@@ -218,7 +239,7 @@ export default function MensagensPageRender() {
               textAlignVertical="center"
             />
           ) : (
-            <View style={{ flexDirection: 'row', gap: 4 }}>
+            <View style={{ flexDirection: "row", gap: 4 }}>
               <TextInput
                 style={[
                   stylesChat.input,
@@ -231,7 +252,7 @@ export default function MensagensPageRender() {
                 ]}
                 value={newMessage}
                 onChangeText={setNewMessage}
-                placeholder={'Nova mensagem...'}
+                placeholder={"Nova mensagem..."}
                 placeholderTextColor={colors.PlaceholderTextColor}
                 multiline={true}
                 scrollEnabled={true}
@@ -266,3 +287,4 @@ export default function MensagensPageRender() {
     </View>
   )
 }
+

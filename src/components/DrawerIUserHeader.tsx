@@ -1,8 +1,7 @@
 import { User } from "@/types/interfaces";
 import { AntDesign } from "@expo/vector-icons";
-import { Image } from "expo-image";
 import { router } from "expo-router";
-import { ActivityIndicator, Platform, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Image, Platform, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { formatPhoneNumber } from "./FormatNumberFront";
 import { ThemeToggle } from "./ThemeToggle";
 

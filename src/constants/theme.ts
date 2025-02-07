@@ -4,6 +4,7 @@ export const lightColors: ThemeColors = {
   background: "#FFFFFF",
   text: "#000000",
   primary: "#1E90FF",
+  sendchatCorlo: "#0ea5e9",
   buttonText: "#000000",
   borderColor: "#000000",
   PlaceholderTextColor: "#C7C7CD",
@@ -43,6 +44,7 @@ export const darkColors: ThemeColors = {
   backgroundColorHeaderLinks: '#2a2a2a',
   backgroundHeader: '#212121',
   backgroundButton: '#1E90FF',
+  sendchatCorlo: "#0ea5e9",
   backgroundsendMenssage: '#1E90FF',
   backgroundreceiveMenssage: '',
 

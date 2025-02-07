@@ -13,6 +13,7 @@ export interface ThemeColors {
   phoneContacts: string;
   backgroundColorContacts: string;
   backgroundButton: string;
+  sendchatCorlo: string;
 
   backgroundsendMenssage: string;
   backgroundreceiveMenssage: string;

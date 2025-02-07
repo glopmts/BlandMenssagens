@@ -1,15 +1,15 @@
+import { socket } from "@/server/socket-io";
 import { deleteOldAudio, deleteOldImage } from "@/types/deleteImagemFirebase";
 import { Mensagens } from "@/types/interfaces";
 import { url } from "@/utils/url-api";
 import { useEffect, useState } from "react";
 import { Alert, ToastAndroid } from "react-native";
-import io from "socket.io-client";
 
-const socket = io("http://192.168.18.8:5001");
 
 export function useMessages(chatId: string, userId: string) {
   const [messages, setMessages] = useState<Mensagens[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     socket.on(`chat:${userId}`, (message: Mensagens) => {
@@ -25,27 +25,20 @@ export function useMessages(chatId: string, userId: string) {
   useEffect(() => {
     async function fetchMessages() {
       try {
-        const res = await fetch(`${url}/api/user/menssagens/${userId}`);
+        const res = await fetch(`${url}/api/user/menssagens?userId=${userId}&chatWith=${chatId}`);
         if (!res.ok) throw new Error("Erro ao buscar mensagens");
-
         const data = await res.json();
-
-        const filteredMessages = data.filter((msg: Mensagens) => {
-          if (msg.hidden_by_sender && msg.sender_id === userId) return false;
-          if (msg.hidden_by_receiver && msg.receiver_id === userId) return false;
-          return true;
-        });
-
-        setMessages(filteredMessages);
+        setMessages(data);
       } catch (error) {
         console.error("Error fetching messages:", error);
+        setError("Erro ao carregar mensagens. Tente novamente mais tarde.");
       } finally {
         setLoading(false);
       }
     }
 
     fetchMessages();
-  }, [userId]);
+  }, [userId, url]);
 
 
   const updateMessageStatus = async (messageId: string, status: string) => {
@@ -136,18 +129,7 @@ export function useMessages(chatId: string, userId: string) {
 }
 
 export const handleClearMenssagens = async (userId: string, chatWith: string) => {
-  try {
-    await fetch(`${url}/api/user/clearChatForUser`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ userId, chatWith }),
-    });
-    ToastAndroid.show("Mensagens limpas com sucesso!", ToastAndroid.SHORT);
-  } catch (error) {
-    console.error("Error clearing messages:", error);
-  }
+  Alert.alert("Trabalhando nesta função!")
 }
 
 
