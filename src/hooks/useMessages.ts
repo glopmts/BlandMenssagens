@@ -16,10 +16,6 @@ export function useMessages(chatId: string, userId: string) {
       setMessages((prev) => [...prev, message]);
     });
 
-    socket.on(`chat:${chatId}`, (message: Mensagens) => {
-      setMessages((prev) => [...prev, message]);
-    });
-
     return () => {
       socket.off(`chat:${userId}`);
       socket.off(`chat:${chatId}`);
@@ -118,6 +114,7 @@ export function useMessages(chatId: string, userId: string) {
     );
   };
 
+
   const sendMessage = (content: string, legendImage: string, imageUrl: string[] = [], audioUrl?: string) => {
     const newMessage: Mensagens = {
       id: Date.now().toString(),
@@ -131,9 +128,9 @@ export function useMessages(chatId: string, userId: string) {
       images: imageUrl,
       audioUrl: audioUrl
     };
+
     socket.emit("send_message", newMessage);
   };
-
 
   return { messages, loading, sendMessage, handleDeleteMessage, updateMessageStatus };
 }

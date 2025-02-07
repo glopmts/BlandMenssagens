@@ -7,16 +7,16 @@ import { useRouter } from "expo-router"
 import { ActivityIndicator, FlatList, RefreshControl, Text, TouchableOpacity, View } from "react-native"
 
 export default function ContactsScreen() {
-  const { user } = useUser()
-  const { colors } = useTheme()
-  const router = useRouter()
-  const userId = user?.id || ''
-  const { contacts, error, isLoading, onRefresh, refreshing } = ContactsListUser({ userId })
+  const { user } = useUser();
+  const { colors } = useTheme();
+  const router = useRouter();
+  const userId = user?.id || "";
+  const { contacts, commercialContacts, error, isLoading, onRefresh, refreshing } = ContactsListUser({ userId });
 
   const ContactListItem = ({ item, colors, router }: any) => {
     const lastSeenText = item?.lastOnline
       ? new Date(item.lastOnline).toLocaleString()
-      : "Nunca visto"
+      : "Nunca visto";
 
     return (
       <TouchableOpacity
@@ -24,19 +24,26 @@ export default function ContactsScreen() {
         onPress={() => router.navigate(`/(pages)/menssagens/${item.contact_id}`)}
       >
         {item?.image ? (
-          <Image style={stylesListContacst.contactImage} source={{ uri: item?.image }} />
-        ) : (
+          <Image style={stylesListContacst.contactImage} source={{ uri: item.image }} />
+        ) : item?.name ? (
           <View style={[stylesListContacst.contactImage, { backgroundColor: colors.primary }]}>
-            <Text style={{ color: "white", fontWeight: "800", fontSize: 20 }}>{item?.name?.charAt(0)}</Text>
+            <Text style={{ color: "white", fontWeight: "800", fontSize: 20 }}>
+              {item.name.charAt(0)}
+            </Text>
           </View>
+        ) : (
+          <Image
+            style={stylesListContacst.contactImage}
+            source={{ uri: 'https://i.pinimg.com/1200x/d4/8f/8f/d48f8f59f2de25750b13084b59301201.jpg' }}
+          />
         )}
         <View>
           <Text style={[stylesListContacst.contactName, { color: colors.text }]}>{item?.name || "Nome não disponível"}</Text>
           <Text style={[{ color: colors.gray }]}>{lastSeenText}</Text>
         </View>
       </TouchableOpacity>
-    )
-  }
+    );
+  };
 
   if (isLoading) {
     return (
@@ -48,7 +55,7 @@ export default function ContactsScreen() {
       >
         <ActivityIndicator size="large" color={colors.primary} />
       </View>
-    )
+    );
   }
 
   if (error) {
@@ -56,13 +63,13 @@ export default function ContactsScreen() {
       <View style={[stylesListContacst.container, { backgroundColor: colors.backgroundColorContacts }]}>
         <Text style={{ color: colors.text }}>{error}</Text>
       </View>
-    )
+    );
   }
 
   return (
     <View style={[stylesListContacst.container, { backgroundColor: colors.backgroundColorContacts }]}>
       <FlatList
-        data={contacts}
+        data={[...contacts, ...commercialContacts]}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => <ContactListItem router={router} item={item} colors={colors} />}
         ListHeaderComponent={() => <Text style={[stylesListContacst.title, { color: colors.text }]}>Seus contatos salvos</Text>}
@@ -76,11 +83,11 @@ export default function ContactsScreen() {
           />
         }
       />
-      <View style={{ justifyContent: 'center', alignContent: 'center', flex: 1 }}>
-        {contacts.length === 0 && (
-          <Text style={{ textAlign: 'center', color: colors.text, fontSize: 20, fontWeight: "800" }}>Sem contatos</Text>
+      <View style={{ justifyContent: "center", alignContent: "center", flex: 1 }}>
+        {contacts.length === 0 && commercialContacts.length === 0 && (
+          <Text style={{ textAlign: "center", color: colors.text, fontSize: 20, fontWeight: "800" }}>Sem contatos</Text>
         )}
       </View>
     </View>
-  )
+  );
 }

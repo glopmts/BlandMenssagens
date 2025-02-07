@@ -1,3 +1,4 @@
+import { formatPhoneNumber } from '@/components/FormatNumberFront';
 import UserData from '@/hooks/useData';
 import { useTheme } from '@/hooks/useTheme';
 import { useUser } from '@clerk/clerk-expo';
@@ -13,7 +14,7 @@ const ProfileScreen = () => {
   if (isLoader) {
     return (
       <View style={[stylesProfile.container, { backgroundColor: colors.background }]}>
-        <ActivityIndicator size={26} color={colors.text} />
+        <ActivityIndicator size={30} color={colors.text} />
       </View>
     );
   }
@@ -27,7 +28,7 @@ const ProfileScreen = () => {
         <View style={stylesProfile.inforDetails}>
           <View>
             <Text style={[stylesProfile.phone, { color: colors.text }]}>
-              {userData?.phone}
+              {formatPhoneNumber(userData?.phone || 'No number!')}
             </Text>
             <Text style={[stylesProfile.details, { color: colors.gray }]}>
               Telefone

@@ -129,9 +129,15 @@ function ListMensagens({ item, colors }: { item: Mensagens; colors: any }) {
     <Image source={{ uri: contactImage }} style={stylesListMenssagens.contactImage} />
   ) : (
     <View style={[stylesListMenssagens.contactInitial, { backgroundColor: colors.primary }]}>
-      <Text style={stylesListMenssagens.contactInitialText}>
-        {contactName ? contactName.charAt(0).toUpperCase() : ""}
-      </Text>
+      {contactName ? (
+        <Text style={stylesListMenssagens.contactInitialText}>
+          {contactName ? contactName.charAt(0).toUpperCase() : "BL"}
+        </Text>
+      ) : (
+        <Text style={stylesListMenssagens.contactInitialText}>
+          BL
+        </Text>
+      )}
     </View>
   );
 

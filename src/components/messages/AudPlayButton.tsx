@@ -77,7 +77,10 @@ export default function AudioPlayer({ audioUrl, imageUrl }: { audioUrl: string, 
           <FontAwesome style={styles.mic} name="microphone" size={18} color={colors.primary} />
         </View>
       ) : (
-        <Ionicons name="person" size={24} color="white" />
+        <View style={[styles.imageNotContainer, { backgroundColor: colors.backgroundColorHeaderLinks }]}>
+          <Ionicons name="person" size={24} color={colors.text} />
+          <FontAwesome style={styles.mic} name="microphone" size={18} color={colors.primary} />
+        </View>
       )}
     </View>
   )
@@ -94,6 +97,13 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     position: 'relative'
+  },
+  imageNotContainer: {
+    position: 'relative',
+    padding: 10,
+    borderRadius: 50,
+    justifyContent: "center",
+    alignItems: "center",
   },
   button: {
     backgroundColor: "#4A90E2",

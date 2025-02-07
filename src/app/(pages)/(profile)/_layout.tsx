@@ -15,7 +15,7 @@ export default function LayoutProfile() {
   if (isLoader) {
     return (
       <View style={styles.container}>
-        <ActivityIndicator size={18} color={colors.text} />
+        <ActivityIndicator size={28} color={colors.text} />
       </View>
     );
   }

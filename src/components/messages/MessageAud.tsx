@@ -1,17 +1,16 @@
-'use client';
-
 import { Ionicons } from '@expo/vector-icons';
 import { Audio } from 'expo-av';
 import React, { useState } from 'react';
-import { TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, TouchableOpacity, View } from 'react-native';
 
 interface AudioRecorderProps {
-  onSend: (audioUri: string) => void;
+  onSend: (audioUri: string, tempMessageId: string) => void
 }
 
 export default function AudioRecorder({ onSend }: AudioRecorderProps) {
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
   const [isRecording, setIsRecording] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
   const startRecording = async () => {
     try {
@@ -39,25 +38,33 @@ export default function AudioRecorder({ onSend }: AudioRecorderProps) {
 
   const stopRecording = async () => {
     try {
-      if (!recording) return;
+      if (!recording) return
 
-      await recording.stopAndUnloadAsync();
-      const uri = recording.getURI();
+      await recording.stopAndUnloadAsync()
+      const uri = recording.getURI()
       if (uri) {
-        onSend(uri);
+        setIsUploading(true)
+        const tempMessageId = `temp-${Date.now()}`
+        onSend(uri, tempMessageId)
       }
 
-      setRecording(null);
-      setIsRecording(false);
+      setRecording(null)
+      setIsRecording(false)
     } catch (error) {
-      console.error('Erro ao parar gravação', error);
+      console.error("Erro ao parar gravação", error)
+    } finally {
+      setIsUploading(false)
     }
-  };
+  }
 
   return (
-    <TouchableOpacity onPress={isRecording ? stopRecording : startRecording}>
-      <View style={{ backgroundColor: isRecording ? 'red' : '#1E90FF', padding: 10, borderRadius: 25 }}>
-        <Ionicons name={isRecording ? 'stop' : 'mic'} size={24} color="white" />
+    <TouchableOpacity onPress={isRecording ? stopRecording : startRecording} disabled={isUploading}>
+      <View style={{ backgroundColor: isRecording ? "red" : "#1E90FF", padding: 10, borderRadius: 25 }}>
+        {isUploading ? (
+          <ActivityIndicator size="small" color="white" />
+        ) : (
+          <Ionicons name={isRecording ? "stop" : "mic"} size={24} color="white" />
+        )}
       </View>
     </TouchableOpacity>
   );

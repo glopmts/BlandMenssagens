@@ -1,6 +1,7 @@
 import { useTheme } from "@/hooks/useTheme";
 import { url } from "@/utils/url-api";
 import { useSignUp } from "@clerk/clerk-expo";
+import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { useState } from "react";
@@ -16,6 +17,7 @@ export default function SignUp() {
   const [pendingVerification, setPendingVerification] = useState(false);
   const [loader, setLoader] = useState(false);
   const router = useRouter();
+  const [isPreview, setIsPreview] = useState(false);
 
   const handleSignUp = async () => {
     if (!isLoaded) return;
@@ -104,6 +106,8 @@ export default function SignUp() {
     }
   };
 
+  const handleShowPreview = () => setIsPreview(!isPreview);
+
   return (
     <LinearGradient colors={["#4d4949", "#2f2f2f", "#323131"]} style={styles.container}>
       <Animated.View style={styles.formContainer}>
@@ -120,14 +124,20 @@ export default function SignUp() {
                 keyboardType="email-address"
                 autoCapitalize="none"
               />
-              <TextInput
-                style={[styles.input, { color: colors.text }]}
-                placeholder="Senha"
-                placeholderTextColor={colors.gray}
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-              />
+              <View style={styles.passwordInput}>
+                <TextInput
+                  style={[styles.input, { color: colors.text }]}
+                  placeholder="Senha"
+                  placeholderTextColor={colors.gray}
+                  value={password}
+                  onChangeText={setPassword}
+                  keyboardType={isPreview ? 'visible-password' : 'ascii-capable'}
+                  secureTextEntry
+                />
+                <TouchableOpacity style={[styles.buttonPassword]} onPress={handleShowPreview} disabled={loader}>
+                  {loader ? <ActivityIndicator color={colors.buttonText} /> : <Ionicons name={isPreview ? 'eye' : 'eye-off-outline'} size={24} color="#fffc" />}
+                </TouchableOpacity>
+              </View>
               <TextInput
                 style={[styles.input, { color: colors.text }]}
                 placeholder="Numero de telefone"
@@ -170,4 +180,17 @@ const styles = StyleSheet.create({
   input: { height: 50, borderWidth: 1, borderRadius: 10, paddingHorizontal: 15, marginBottom: 15, fontSize: 16 },
   button: { height: 50, borderRadius: 25, justifyContent: "center", alignItems: "center" },
   buttonText: { fontSize: 18, fontWeight: "bold" },
+  passwordInput: {
+    position: 'relative'
+  },
+  buttonPassword: {
+    position: 'absolute',
+    top: 0,
+    right: 10,
+    height: 50,
+    width: 50,
+    borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center'
+  }
 });

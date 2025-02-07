@@ -13,35 +13,32 @@ import { stylesUpdateProfile } from "./(styles)/stylesUploadProfile";
 
 export default function UpdateProfile() {
   const { colors } = useTheme();
-  const [image, setImage] = useState<string | null>(null);
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [Loaded, setLoaded] = useState(true);
-  const [uploadLoad, setUpload] = useState(false);
-  const [error, setError] = useState("");
-  const [userData, setUserData] = useState<any>(null);
   const { user } = useClerk();
   const userId = user?.id;
   const router = useRouter();
+
+  const [userData, setUserData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    imageurl: null as string | null,
+  });
+
+  const [isLoading, setIsLoading] = useState(true);
+  const [isUploading, setIsUploading] = useState(false);
 
   const fetchData = useCallback(async () => {
     if (!userId) return;
     try {
       const response = await fetch(`${url}/api/user/${userId}`);
-      if (!response.ok) {
-        throw new Error("Failed to fetch user data");
-      }
-      const userData = await response.json();
-      setName(userData.name);
-      setImage(userData.imageurl);
-      setEmail(userData.email);
+      if (!response.ok) throw new Error("Erro ao buscar os dados do usuário");
 
-      setUserData(userData);
+      const data = await response.json();
+      setUserData(data);
     } catch (error) {
-      Alert.alert("Error", "Failed to fetch user data");
+      Alert.alert("Erro", "Falha ao carregar os dados.");
     } finally {
-      setLoaded(false)
+      setIsLoading(false);
     }
   }, [userId]);
 
@@ -63,83 +60,71 @@ export default function UpdateProfile() {
         [{ resize: { width: 300, height: 300 } }],
         { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
       );
-      setImage(manipResult.uri);
+      setUserData((prev) => ({ ...prev, imageurl: manipResult.uri }));
     }
   };
 
   const uploadImage = async (uri: string) => {
-    setUpload(true);
     try {
+      setIsUploading(true);
       const response = await fetch(uri);
       const blob = await response.blob();
-      const fileRef = ref(storage, `app-menssagens/avatars/${user?.id}/${new Date().getTime()}.jpg`);
+      const fileRef = ref(storage, `app-menssagens/avatars/${userId}/${Date.now()}.jpg`);
       await uploadBytes(fileRef, blob);
-      const downloadURL = await getDownloadURL(fileRef);
-      return downloadURL;
+      return await getDownloadURL(fileRef);
     } catch (error) {
-      console.error("Erro ao fazer upload da imagem:", error);
+      Alert.alert("Erro", "Falha no upload da imagem.");
       throw error;
     } finally {
-      setUpload(false);
+      setIsUploading(false);
     }
   };
 
   const handleSave = async () => {
-    setIsLoaded(true);
     try {
-      let imageUrl: string | null = null;
-      if (image) {
-        if (userData.imageurl) {
-          await deleteOldImage(userData.imageurl);
-        }
-        imageUrl = await uploadImage(image);
+      setIsLoading(true);
+
+      let imageUrl = userData.imageurl;
+      if (imageUrl && imageUrl.startsWith("file://")) {
+        if (userData.imageurl) await deleteOldImage(userData.imageurl);
+        imageUrl = await uploadImage(imageUrl);
       }
+
       const res = await fetch(`${url}/api/user/update`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userId: user?.id,
-          name,
-          email,
-          imageurl: imageUrl,
-        }),
-      })
-      if (!res.ok) {
-        Alert.alert("Error updating profile!")
-        throw new Error('Falha ao atualizar o usuário!');
-      }
-      ToastAndroid.show('Perfil atualizado com sucesso!', ToastAndroid.SHORT);
-    } catch (err) {
-      setError('Falha ao atualizar o perfil!');
-      console.error('Error updating profile:', err);
-      ToastAndroid.show('Erro ao atualizar perfil', ToastAndroid.SHORT);
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...userData, imageurl: imageUrl, userId }),
+      });
+
+      if (!res.ok) throw new Error('Erro ao atualizar o perfil');
+
+      ToastAndroid.show("Perfil atualizado com sucesso!", ToastAndroid.SHORT);
+      setUserData((prev) => ({ ...prev, imageurl: imageUrl }));
+    } catch (error) {
+      Alert.alert("Erro", (error as any).message);
     } finally {
-      setIsLoaded(false);
+      setIsLoading(false);
     }
   };
 
-  if (Loaded) {
+  if (isLoading) {
     return (
       <View style={[stylesUpdateProfile.container, { backgroundColor: colors.background }]}>
         <ActivityIndicator size={28} color={colors.text} />
       </View>
-    )
+    );
   }
 
   return (
     <View style={[stylesUpdateProfile.container, { backgroundColor: colors.background }]}>
       <Text style={[stylesUpdateProfile.title, { color: colors.text }]}>Atualize seu perfil!</Text>
-      {error && <Text style={[stylesUpdateProfile.error, { color: colors.error }]}>{error}</Text>}
+
       <TouchableOpacity style={stylesUpdateProfile.imageContainer} onPress={pickImage}>
-        {uploadLoad ? (
-          <View style={stylesUpdateProfile.uploadLoader}>
-            <ActivityIndicator size={28} color={colors.text} />
-          </View>
+        {isUploading ? (
+          <ActivityIndicator size={28} color={colors.text} />
         ) : (
-          image ? (
-            <Image source={{ uri: image }} style={stylesUpdateProfile.image} />
+          userData.imageurl ? (
+            <Image source={{ uri: userData.imageurl }} style={stylesUpdateProfile.image} />
           ) : (
             <View style={[stylesUpdateProfile.placeholderImage, { backgroundColor: colors.borderColor }]}>
               <Text style={[stylesUpdateProfile.placeholderText, { color: colors.text }]}>Selecionar Imagem</Text>
@@ -147,30 +132,45 @@ export default function UpdateProfile() {
           )
         )}
       </TouchableOpacity>
+
       <TextInput
         style={[stylesUpdateProfile.input, { color: colors.text, borderColor: colors.borderColor }]}
         placeholder="Seu nome"
         placeholderTextColor={'#999999'}
-        value={name}
-        onChangeText={setName}
+        value={userData.name}
+        onChangeText={(text) => setUserData((prev) => ({ ...prev, name: text }))}
       />
+
       <TextInput
         style={[stylesUpdateProfile.input, { color: colors.text, borderColor: colors.borderColor }]}
         placeholder="Email"
         placeholderTextColor={'#999999'}
-        value={email}
-        onChangeText={setEmail}
+        value={userData.email}
+        onChangeText={(text) => setUserData((prev) => ({ ...prev, email: text }))}
       />
-      <TouchableOpacity disabled={isLoaded} style={[
-        stylesUpdateProfile.button,
-        {
-          backgroundColor: isLoaded ? "#cccccc" : colors.primary,
-          opacity: isLoaded ? 0.6 : 1,
-        },
-      ]} onPress={handleSave}>
-        <Text style={[stylesUpdateProfile.buttonText, { color: colors.buttonText }]}>
-          {isLoaded ? <ActivityIndicator size={20} color={colors.text} /> : "Atualizar Perfil"}
-        </Text>
+
+      <TextInput
+        style={[stylesUpdateProfile.input, { color: colors.text, borderColor: colors.borderColor }]}
+        placeholder="Número telefone (88)xxxxxxx"
+        placeholderTextColor={'#999999'}
+        value={userData.phone}
+        onChangeText={(text) => setUserData((prev) => ({ ...prev, phone: text }))}
+        keyboardType="phone-pad"
+      />
+
+      <TouchableOpacity
+        disabled={isLoading}
+        style={[
+          stylesUpdateProfile.button,
+          { backgroundColor: isLoading ? "#cccccc" : colors.primary, opacity: isLoading ? 0.6 : 1 },
+        ]}
+        onPress={handleSave}
+      >
+        {isLoading ? (
+          <ActivityIndicator size={20} color={colors.text} />
+        ) : (
+          <Text style={[stylesUpdateProfile.buttonText, { color: colors.buttonText }]}>Atualizar Perfil</Text>
+        )}
       </TouchableOpacity>
     </View>
   );

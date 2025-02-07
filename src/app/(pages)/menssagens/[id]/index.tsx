@@ -109,7 +109,6 @@ export default function MensagensPageRender() {
     flatListRef.current?.scrollToEnd({ animated: true })
   }
 
-
   const handleSendAudio = async (audioUri: string) => {
     try {
       const response = await fetch(audioUri)
@@ -238,7 +237,6 @@ export default function MensagensPageRender() {
                 scrollEnabled={true}
                 textAlignVertical="center"
               />
-
               <AudioRecorder onSend={handleSendAudio} />
             </View>
           )}

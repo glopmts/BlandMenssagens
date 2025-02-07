@@ -1,5 +1,5 @@
 import { useNotifications } from "@/hooks/useNotifications";
-import { useAuth } from "@clerk/clerk-expo";
+import { useAuth, useUser } from "@clerk/clerk-expo";
 import { useNetInfo } from '@react-native-community/netinfo';
 import { Redirect, router } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
@@ -10,6 +10,8 @@ import CreateUserBackend from "./actions/userAuth";
 SplashScreen.preventAutoHideAsync();
 
 export default function AppRoot() {
+  const { user } = useUser();
+  const userId = user?.id || "";
   const { isLoaded, isSignedIn } = useAuth();
   const [isReady, setIsReady] = useState(true);
   const { registerForPushNotificationsAsync } = useNotifications();
@@ -19,7 +21,7 @@ export default function AppRoot() {
     const fetchData = async () => {
       try {
         await registerForPushNotificationsAsync();
-        CreateUserBackend();
+        CreateUserBackend({ userId });
       } finally {
         SplashScreen.hideAsync();
         setIsReady(false);
@@ -30,7 +32,7 @@ export default function AppRoot() {
 
   useEffect(() => {
     if (netInfo.isConnected === false) {
-      router.push("/(pages)/NetNotConnection");
+      router.push("/(pages)/NetNoConnection");
       ToastAndroid.show('Sem conexção a internet!', ToastAndroid.SHORT);
     }
   }, [netInfo.isConnected, router]);

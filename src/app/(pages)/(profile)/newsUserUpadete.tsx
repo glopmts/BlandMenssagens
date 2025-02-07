@@ -15,6 +15,7 @@ export default function NewsUserUpdateProfile() {
   const [image, setImage] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [isLoaded, setIsLoaded] = useState(false);
   const [error, setError] = useState("");
   const { user } = useClerk();
@@ -72,6 +73,7 @@ export default function NewsUserUpdateProfile() {
           userId: user?.id,
           name,
           imageurl: imageUrl,
+          phone
         }),
       })
       if (!res.ok) {
@@ -109,6 +111,24 @@ export default function NewsUserUpdateProfile() {
         placeholderTextColor={'#999999'}
         value={name}
         onChangeText={setName}
+      />
+      {/* <TextInput
+        style={[stylesUpdateProfile.input, { color: colors.text, borderColor: colors.borderColor }]}
+        placeholder="Email"
+        placeholderTextColor={'#999999'}
+        value={email}
+        onChangeText={setEmail}
+        keyboardType="email-address"
+        textContentType="emailAddress"
+      /> */}
+      <TextInput
+        style={[stylesUpdateProfile.input, { color: colors.text, borderColor: colors.borderColor }]}
+        placeholder="Seu telefone"
+        placeholderTextColor={'#999999'}
+        value={phone}
+        onChangeText={setPhone}
+        keyboardType="phone-pad"
+        textContentType="telephoneNumber"
       />
       <TouchableOpacity style={[stylesUpdateProfile.button, { backgroundColor: colors.primary }]} onPress={handleSave}>
         <Text style={[stylesUpdateProfile.buttonText, { color: colors.buttonText }]}>

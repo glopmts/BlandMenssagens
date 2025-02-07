@@ -23,34 +23,39 @@ export function DrawerContent(drawerProps: DrawerContentComponentProps) {
 
   const toggleMenu = () => {
     Animated.timing(heightAnim, {
-      toValue: isExpanded ? 0 : 50,
-      duration: 300,
+      toValue: isExpanded ? 0 : 200,
+      duration: 50,
       useNativeDriver: false,
     }).start();
 
     setIsExpanded(!isExpanded);
   };
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const res = await fetch(`${url}/api/user/${userId}`)
-        const userData: User = await res.json()
-        setDataUser(userData)
-      } catch (error) {
-        Alert.alert("Error", "Failed to fetch user data");
-      } finally {
-        setLoader(false)
-      }
+
+  const fetchUserData = async () => {
+    if (!userId) return;
+    setLoader(true);
+    try {
+      const res = await fetch(`${url}/api/user/${userId}`);
+      if (!res.ok) throw new Error("Erro ao buscar usuário");
+      const userData: User = await res.json();
+      setDataUser(userData);
+    } catch (error) {
+      Alert.alert("Erro", "Falha ao buscar dados do usuário");
+    } finally {
+      setLoader(false);
     }
-    fetchData()
-  }, [user?.id])
+  };
+
+  useEffect(() => {
+    fetchUserData();
+  }, [userId]);
+
 
   const signOutUser = async () => {
     await signOut()
     drawerProps.navigation.closeDrawer()
   }
-
 
   return (
     <View style={[styles.drawerContent, { backgroundColor: colors.background }]}>

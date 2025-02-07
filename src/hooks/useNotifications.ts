@@ -49,7 +49,7 @@ export function useNotifications(onNotificationResponse?: (data: any) => void) {
     registerForPushNotificationsAsync();
 
     notificationListener.current = Notifications.addNotificationReceivedListener((notification) => {
-      console.log("Notificação recebida:", notification);
+      // console.log("Notificação recebida:", notification);
     });
 
     responseListener.current = Notifications.addNotificationResponseReceivedListener((response) => {

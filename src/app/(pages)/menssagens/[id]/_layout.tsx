@@ -145,7 +145,7 @@ export default function MensagensLayout() {
                     </View>
                   )}
                   <View>
-                    <Text style={[stylesLayoutId.headerTitle, { color: colors.text }]}>{name || phone}</Text>
+                    <Text style={[stylesLayoutId.headerTitle, { color: colors.text }]}>{name || phone || 'Desconhecido'}</Text>
                     <Text style={[stylesLayoutId.onlineStatus, { color: isOnline ? colors.primary : colors.gray }]}>
                       {isOnline ? "Online" : formatLastOnline(lastOnline)}
                     </Text>

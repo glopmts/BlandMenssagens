@@ -3,6 +3,7 @@ import { AntDesign } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { router } from "expo-router";
 import { ActivityIndicator, Platform, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { formatPhoneNumber } from "./FormatNumberFront";
 import { ThemeToggle } from "./ThemeToggle";
 
 interface UserProps {
@@ -51,7 +52,7 @@ export default function UserInforDrawer({ colors, userData, isLoader, isExpanded
             </Text>
             <View style={styles.inforSidbar}>
               <Text style={[styles.userInfoPhone, { color: colors.text }]}>
-                {userData?.phone ?? 'No number'}
+                {formatPhoneNumber(userData?.phone ?? 'No number')}
               </Text>
               <TouchableOpacity onPress={toggleMenu}>
                 <AntDesign name={isExpanded ? "up" : "down"} size={20} color={colors.text} />

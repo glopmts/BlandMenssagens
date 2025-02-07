@@ -38,7 +38,7 @@ function RootLayoutNav() {
   const { colors } = useTheme();
   return (
     <>
-      <StatusBar translucent={true} />
+      <StatusBar />
       <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.background }}>
         <PortalProvider>
           <Stack
@@ -54,7 +54,6 @@ function RootLayoutNav() {
             <Stack.Screen name='index' />
             <Stack.Screen name="(drawer)" />
             <Stack.Screen name="(auth)" />
-            <Stack.Screen name="(profile)" />
             <Stack.Screen name="(pages)" />
             <Stack.Screen name="+not-found" />
           </Stack>
