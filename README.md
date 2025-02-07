@@ -15,8 +15,8 @@ Bem-vindo ao **App de Mensagens**, um aplicativo desenvolvido com **Expo**, **Ty
 
 ### 1️⃣ Clonar o repositório
 ```bash
-  git clone https://github.com/seu-usuario/seu-repositorio.git
-  cd seu-repositorio
+  git clone https://github.com/gopmts/BlandMenssagens
+  cd BlandMenssagens
 ```
 
 ### 2️⃣ Instalar dependências
