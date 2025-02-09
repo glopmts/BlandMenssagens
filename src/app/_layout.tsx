@@ -50,7 +50,7 @@ function RootLayoutNav() {
   }, [isLoaded]);
 
   useEffect(() => {
-    setTimeout(() => setIsLoaded(true), 1000);
+    setIsLoaded(true);
   }, []);
 
   if (!isLoaded) {
@@ -65,6 +65,8 @@ function RootLayoutNav() {
           <Stack
             screenOptions={{
               headerShown: false,
+              animation: 'fade',
+              presentation: 'transparentModal',
             }}
           >
             <Stack.Screen name='index' />
@@ -82,13 +84,31 @@ export default function RootLayout() {
     SpaceMono: require('../../assets/fonts/SpaceMono-Regular.ttf'),
   });
 
+  const isReady = fontsLoaded;
+
   useEffect(() => {
-    if (fontsLoaded) {
+    const prepare = async () => {
+      try {
+        await SplashScreen.preventAutoHideAsync();
+        
+        // Aqui você pode adicionar outras inicializações necessárias
+        // Por exemplo, carregar dados iniciais, verificar autenticação, etc.
+        
+      } catch (e) {
+        console.warn(e);
+      }
+    };
+
+    prepare();
+  }, []);
+
+  useEffect(() => {
+    if (isReady) {
       SplashScreen.hideAsync();
     }
-  }, [fontsLoaded]);
+  }, [isReady]);
 
-  if (!fontsLoaded) {
+  if (!isReady) {
     return null;
   }
 

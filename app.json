@@ -2,7 +2,7 @@
   "expo": {
     "name": "BlobSend",
     "slug": "app-messagens",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
@@ -19,7 +19,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/splash-icon.png",
-        "backgroundColor": "#ffff"
+        "backgroundColor": "#1E1E1E"
       },
       "permissions": [
         "android.permission.READ_CONTACTS",
@@ -52,10 +52,13 @@
       [
         "expo-notifications",
         {
-          "icon": "./assets/images/adaptive-icon.png",
+          "icon": "./assets/images/notification-icon.png",
           "color": "#ffffff",
           "defaultChannel": "default",
-          "enableBackgroundRemoteNotifications": false
+          "enableBackgroundRemoteNotifications": false,
+          "androidMode": "default",
+          "androidCollapsedTitle": "Novas mensagens",
+          "iosDisplayInForeground": true
         }
       ],
       [
@@ -67,6 +70,13 @@
         }
       ]
     ],
+   "notification": {
+      "icon": "./assets/images/notification-icon.png",
+      "color": "#ffffff",
+      "androidMode": "default",
+      "androidCollapsedTitle": "Novas mensagens",
+      "iosDisplayInForeground": true
+    },
     "experiments": {
       "typedRoutes": true
     },

@@ -54,14 +54,14 @@ export function useNotifications(onNotificationResponse?: (data: any) => void) {
 
     responseListener.current = Notifications.addNotificationResponseReceivedListener((response) => {
       const data = response.notification.request.content.data;
-      console.log("Dados da notificação recebida:", data); // Debug
+      console.log("Dados da notificação recebida:", data); 
 
       if (onNotificationResponse) {
         onNotificationResponse(data);
       }
 
       if (data?.chatId) {
-        console.log("Navegando para chat:", data.chatId); // Debug
+        console.log("Navegando para chat:", data.chatId); 
         router.push(`/(pages)/menssagens/${data.chatId}`);
       }
     });
@@ -77,4 +77,18 @@ export function useNotifications(onNotificationResponse?: (data: any) => void) {
   }, [onNotificationResponse]);
 
   return { registerForPushNotificationsAsync };
+}
+
+
+export async function getBadgeCount() {
+  return await Notifications.getBadgeCountAsync();
+}
+
+export async function incrementBadgeCount() {
+  const currentBadge = await getBadgeCount();
+  await Notifications.setBadgeCountAsync(currentBadge + 1);
+}
+
+export async function resetBadgeCount() {
+  await Notifications.setBadgeCountAsync(0);
 }
