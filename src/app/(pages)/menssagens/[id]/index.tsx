@@ -265,7 +265,7 @@ export default function MensagensPageRender() {
         {isUploading ? (
           <ActivityIndicator size={24} color={colors.primary} style={{ marginLeft: 12 }} />
         ) : (
-          <>
+          <View>
             {newMessage.trim() || imageUrl.length > 0 ? (
               <TouchableOpacity
                 style={[stylesChat.sendButton, { backgroundColor: colors.primary }]}
@@ -281,7 +281,7 @@ export default function MensagensPageRender() {
                 <Ionicons name="image" size={24} color="#fff" />
               </TouchableOpacity>
             )}
-          </>
+          </View>
         )}
       </View>
     </View>
