@@ -43,6 +43,7 @@ export const useRegisterPushToken = (userId: string) => {
           return;
         }
         const pushToken = (await Notifications.getExpoPushTokenAsync()).data;
+
         const res = await fetch(`${url}/api/user/pushtoken`, {
           method: 'POST',
           headers: {

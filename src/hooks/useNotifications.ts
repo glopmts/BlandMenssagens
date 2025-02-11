@@ -54,14 +54,14 @@ export function useNotifications(onNotificationResponse?: (data: any) => void) {
 
     responseListener.current = Notifications.addNotificationResponseReceivedListener((response) => {
       const data = response.notification.request.content.data;
-      console.log("Dados da notificação recebida:", data); 
+      console.log("Dados da notificação recebida:", data);
 
       if (onNotificationResponse) {
         onNotificationResponse(data);
       }
 
       if (data?.chatId) {
-        console.log("Navegando para chat:", data.chatId); 
+        console.log("Navegando para chat:", data.chatId);
         router.push(`/(pages)/menssagens/${data.chatId}`);
       }
     });

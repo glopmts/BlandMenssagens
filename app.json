@@ -26,7 +26,8 @@
         "android.permission.WRITE_CONTACTS"
       ],
       "package": "com.glopblog.glopsend",
-      "googleServicesFile": "./path/google-services.json"
+      "googleServicesFile": "./path/google-services.json",
+      "useNextNotificationsApi": true
     },
     "web": {
       "bundler": "metro",
@@ -58,8 +59,7 @@
           "enableBackgroundRemoteNotifications": false,
           "androidMode": "default",
           "androidCollapsedTitle": "Novas mensagens",
-          "iosDisplayInForeground": true,
-          "mode": "production"
+          "iosDisplayInForeground": true
         }
       ],
       [
@@ -76,8 +76,7 @@
       "color": "#ffffff",
       "androidMode": "default",
       "androidCollapsedTitle": "Novas mensagens",
-      "iosDisplayInForeground": true,
-      "mode": "production"
+      "iosDisplayInForeground": true
     },
     "experiments": {
       "typedRoutes": true
