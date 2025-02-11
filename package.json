@@ -18,7 +18,10 @@
     "doctor": {
       "reactNativeDirectoryCheck": {
         "listUnknownPackages": false,
-        "exclude": ["react-native-element-dropdown", "react-native-image-viewing"]
+        "exclude": [
+          "react-native-element-dropdown",
+          "react-native-image-viewing"
+        ]
       }
     }
   },
@@ -34,7 +37,7 @@
     "@rneui/themed": "^4.0.0-rc.8",
     "@supabase/supabase-js": "^2.48.1",
     "date-fns": "^4.1.0",
-    "expo": "~52.0.31",
+    "expo": "~52.0.32",
     "expo-av": "~15.0.2",
     "expo-blur": "~14.0.3",
     "expo-clipboard": "~7.0.1",
@@ -44,9 +47,9 @@
     "expo-file-system": "~18.0.9",
     "expo-font": "~13.0.3",
     "expo-haptics": "~14.0.1",
-    "expo-image": "~2.0.4",
+    "expo-image": "~2.0.5",
     "expo-image-manipulator": "~13.0.6",
-    "expo-image-picker": "~16.0.5",
+    "expo-image-picker": "~16.0.6",
     "expo-linear-gradient": "~14.0.2",
     "expo-linking": "~7.0.5",
     "expo-media-library": "~17.0.5",

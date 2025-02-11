@@ -2,7 +2,7 @@
   "expo": {
     "name": "BlobSend",
     "slug": "app-messagens",
-    "version": "1.0.4",
+    "version": "1.0.5",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
@@ -58,7 +58,8 @@
           "enableBackgroundRemoteNotifications": false,
           "androidMode": "default",
           "androidCollapsedTitle": "Novas mensagens",
-          "iosDisplayInForeground": true
+          "iosDisplayInForeground": true,
+          "mode": "production"
         }
       ],
       [
@@ -75,7 +76,8 @@
       "color": "#ffffff",
       "androidMode": "default",
       "androidCollapsedTitle": "Novas mensagens",
-      "iosDisplayInForeground": true
+      "iosDisplayInForeground": true,
+      "mode": "production"
     },
     "experiments": {
       "typedRoutes": true
