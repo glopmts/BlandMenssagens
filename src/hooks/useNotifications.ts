@@ -62,7 +62,7 @@ export function useNotifications(onNotificationResponse?: (data: any) => void) {
 
       if (data?.chatId) {
         console.log("Navegando para chat:", data.chatId);
-        router.push(`/(pages)/menssagens/${data.chatId}`);
+        router.navigate(`/(pages)/menssagens/${data.chatId}`);
       }
     });
 

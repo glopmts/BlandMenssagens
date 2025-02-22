@@ -20,7 +20,7 @@ export default function PasswordInput({ loader, password, setPassword }: Passwor
   return (
     <View style={stylesInputs.passwordInput}>
       <TextInput
-        style={[stylesInputs.input, { color: colors.text }]}
+        style={[stylesInputs.input, { color: colors.text, borderColor: colors.borderColor }]}
         placeholder="Senha"
         placeholderTextColor={colors.gray}
         value={password}

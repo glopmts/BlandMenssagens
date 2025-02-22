@@ -31,12 +31,15 @@ export function DrawerContent(drawerProps: DrawerContentComponentProps) {
     setIsExpanded(!isExpanded);
   };
 
+  const onLogout = async () => {
+    try {
+      await signOut();
+      router.replace("/(auth)/sign-in");
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
-  const signOutUser = async () => {
-    await signOut()
-    drawerProps.navigation.closeDrawer();
-    router.push("/(auth)/sign-in")
-  }
 
   return (
     <View style={[styles.drawerContent, { backgroundColor: colors.background }]}>
@@ -52,7 +55,7 @@ export function DrawerContent(drawerProps: DrawerContentComponentProps) {
         <LinksOptionsDrawer />
       </View>
       <View style={[styles.signOutButton, { backgroundColor: colors.backgroundColorHeaderLinks }]}>
-        <TouchableOpacity style={styles.buttton} onPress={signOutUser}>
+        <TouchableOpacity style={styles.buttton} onPress={onLogout}>
           <MaterialIcons name="logout" size={24} color={colors.text} />
           <Text style={{ color: colors.text, fontSize: 18 }}>Sair</Text>
         </TouchableOpacity>

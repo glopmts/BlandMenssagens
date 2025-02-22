@@ -3,7 +3,7 @@ import { useTheme } from "@/hooks/useTheme"
 import { useSignIn } from "@clerk/clerk-expo"
 import { Link, router } from "expo-router"
 import { useState } from "react"
-import { ActivityIndicator, Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native"
+import { ActivityIndicator, Alert, Keyboard, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from "react-native"
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("")
@@ -43,41 +43,43 @@ export default function LoginScreen() {
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={styles.formContainer}>
-        <Text style={[styles.title, { color: colors.text }]}>Entre com seu email</Text>
-        <View style={styles.inputs}>
-          <TextInput
-            style={[styles.input, { color: colors.text, borderColor: colors.borderColor }]}
-            placeholder="Email"
-            placeholderTextColor={colors.gray}
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            textContentType="emailAddress"
-            autoCapitalize="none"
-          />
-          <PasswordInput password={password} setPassword={setPassword} />
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+        <View style={styles.formContainer}>
+          <Text style={[styles.title, { color: colors.text }]}>Entre com seu email</Text>
+          <View style={styles.inputs}>
+            <TextInput
+              style={[styles.input, { color: colors.text, borderColor: colors.borderColor }]}
+              placeholder="Email"
+              placeholderTextColor={colors.gray}
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              textContentType="emailAddress"
+              autoCapitalize="none"
+            />
+            <PasswordInput password={password} setPassword={setPassword} />
+          </View>
+          <TouchableOpacity style={[styles.button, { backgroundColor: colors.primary }]} onPress={onLogin}>
+            <Text style={[styles.buttonText, { color: colors.buttonText }]}>
+              {isLoader ? (
+                <ActivityIndicator size={28} color={colors.text} />
+              ) : (
+                "Login"
+              )}
+            </Text>
+          </TouchableOpacity>
         </View>
-        <TouchableOpacity style={[styles.button, { backgroundColor: colors.primary }]} onPress={onLogin}>
-          <Text style={[styles.buttonText, { color: colors.buttonText }]}>
-            {isLoader ? (
-              <ActivityIndicator size={28} color={colors.text} />
-            ) : (
-              "Login"
-            )}
+        <View style={styles.bottomContainer}>
+          <Text style={[styles.text, { color: colors.text }]}>
+            Não tem uma conta?{" "}
+            <Link href="/(auth)/sign-up" style={[styles.link, { color: colors.primary }]}>
+              Cadastre-se
+            </Link>
           </Text>
-        </TouchableOpacity>
+        </View>
       </View>
-      <View style={styles.bottomContainer}>
-        <Text style={[styles.text, { color: colors.text }]}>
-          Não tem uma conta?{" "}
-          <Link href="/(auth)/sign-up" style={[styles.link, { color: colors.primary }]}>
-            Cadastre-se
-          </Link>
-        </Text>
-      </View>
-    </View>
+    </TouchableWithoutFeedback>
   )
 }
 

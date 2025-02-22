@@ -114,7 +114,7 @@ export function useMessages(userId: string, chatId: string,) {
   };
 
 
-  const sendMessage = (content: string, legendImage: string, imageUrl: string[] = [], audioUrl?: string) => {
+  const sendMessage = (content: string, legendImage: string, imageUrl: string[] = [], audioUrl?: string, filesUrls: string[] = []) => {
     const newMessage: Mensagens = {
       id: Date.now().toString(),
       sender_id: userId,
@@ -125,7 +125,8 @@ export function useMessages(userId: string, chatId: string,) {
       legendImage: legendImage,
       is_deleted: false,
       images: imageUrl,
-      audioUrl: audioUrl
+      audioUrl: audioUrl,
+      files: filesUrls
     };
 
     setMessages((prev) => [...prev, newMessage])
@@ -137,6 +138,7 @@ export function useMessages(userId: string, chatId: string,) {
         content,
         images: imageUrl,
         audioUrl,
+        files: filesUrls
       })
     } catch (error) {
       setMessages((prev) => prev.filter((msg) => msg.id !== newMessage.id))

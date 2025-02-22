@@ -39,7 +39,8 @@ export interface Mensagens {
   deleted_at_receiver?: Date;
   deleted_at_sender?: Date;
   contact_image?: string | null;
-  images: string[]
+  images: string[],
+  files: string[],
   status: "send" | "delivered" | "read"
   audioUrl?: string;
 }

@@ -1,4 +1,5 @@
 import NoAddContact from "@/components/conatcts/NoContactAdd"
+import MenuOptions from "@/components/MenuOptionsMenssagens"
 import AudioRecorder from "@/components/messages/MessageAud"
 import { MessageItem } from "@/components/messages/MessagensRenderChat"
 import { ContactsListUser } from "@/hooks/useContacts"
@@ -11,6 +12,7 @@ import { downloadImage } from "@/utils/saveImagesUrl"
 import { useAuth } from "@clerk/clerk-expo"
 import { Ionicons } from "@expo/vector-icons"
 import * as Clipboard from "expo-clipboard"
+import * as DocumentPicker from "expo-document-picker"
 import { Image } from "expo-image"
 import * as ImageManipulator from "expo-image-manipulator"
 import * as ImagePicker from "expo-image-picker"
@@ -46,7 +48,9 @@ export default function MensagensPageRender() {
   const [legendImage, setLegendImage] = useState("")
   const [imageUrl, setImageUrl] = useState<string[]>([])
   const [isUploading, setIsUploading] = useState(false)
-  const flatListRef = useRef<FlatList>(null)
+  const flatListRef = useRef<FlatList>(null);
+  const [isKeyboardOpen, setIsKeyboardOpen] = useState(false)
+  const [files, setFiles] = useState("")
 
 
   const handleCopy = async (text: string, id: string, legendImage: string) => {
@@ -154,6 +158,30 @@ export default function MensagensPageRender() {
     }
   }
 
+  const handleMenu = () => {
+    setIsKeyboardOpen(!isKeyboardOpen)
+  }
+
+  const handleFiles = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: "*/*",
+        copyToCacheDirectory: true,
+      });
+
+      if (result.canceled) return;
+
+      console.log("Arquivo selecionado:", result.assets[0].uri);
+      return result.assets[0].uri;
+    } catch (error) {
+      console.error("Erro ao selecionar arquivo:", error);
+    }
+  }
+
+  const handleCam = () => {
+
+  }
+
   if (loading) {
     return (
       <View
@@ -211,6 +239,16 @@ export default function MensagensPageRender() {
           </TouchableOpacity>
         </View>
       )}
+
+      {isKeyboardOpen && (
+        <MenuOptions
+          onCilckImage={pickImage}
+          onCilckFiles={handleFiles}
+          onCilckCam={handleCam}
+          isVisible={isKeyboardOpen}
+        />
+      )}
+
       <View style={[stylesChat.inputContainer, { borderTopColor: colors.borderColor }]}>
         <View style={{ flex: 1 }}>
           {imageUrl.length > 0 ? (
@@ -259,7 +297,7 @@ export default function MensagensPageRender() {
         {isUploading ? (
           <ActivityIndicator size={24} color={colors.primary} style={{ marginLeft: 12 }} />
         ) : (
-          <View>
+          <View style={{ position: "relative" }}>
             {newMessage.trim() || imageUrl.length > 0 ? (
               <TouchableOpacity
                 style={[stylesChat.sendButton, { backgroundColor: colors.primary }]}
@@ -268,11 +306,8 @@ export default function MensagensPageRender() {
                 <Ionicons name="send" size={24} color="#fff" />
               </TouchableOpacity>
             ) : (
-              <TouchableOpacity
-                style={[stylesChat.imageButton, { backgroundColor: colors.primary }]}
-                onPress={pickImage}
-              >
-                <Ionicons name="image" size={24} color="#fff" />
+              <TouchableOpacity style={[stylesChat.sendButton, { backgroundColor: colors.backgroundColorContacts }]} onPress={handleMenu}>
+                <Ionicons name="file-tray" size={24} color={colors.gray} />
               </TouchableOpacity>
             )}
           </View>

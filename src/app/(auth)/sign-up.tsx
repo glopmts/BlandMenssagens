@@ -93,21 +93,6 @@ export default function SignUp() {
     }
   };
 
-  const handleResendCode = async () => {
-    if (!isLoaded) return;
-    setLoader(true);
-    try {
-      await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
-      Alert.alert("Sucesso", "Novo código enviado. Verifique seu email.");
-    } catch (err: any) {
-      Alert.alert("Erro", err.errors?.[0]?.message || "Ocorreu um erro ao reenviar o código.");
-      console.error(err);
-    } finally {
-      setLoader(false);
-    }
-  };
-
-  const handleShowPreview = () => setIsPreview(!isPreview);
 
   return (
     <LinearGradient colors={["#4d4949", "#2f2f2f", "#323131"]} style={stylesInputs.container}>
@@ -117,7 +102,7 @@ export default function SignUp() {
           {!pendingVerification ? (
             <>
               <TextInput
-                style={[stylesInputs.input, { color: colors.text }]}
+                style={[stylesInputs.input, { color: colors.text, borderColor: colors.borderColor }]}
                 placeholder="Email"
                 placeholderTextColor={colors.gray}
                 value={email}
@@ -127,7 +112,7 @@ export default function SignUp() {
               />
               <PasswordInput loader={loader} password={password} setPassword={setPassword} />
               <TextInput
-                style={[stylesInputs.input, { color: colors.text }]}
+                style={[stylesInputs.input, { color: colors.text, borderColor: colors.borderColor }]}
                 placeholder="Numero de telefone"
                 placeholderTextColor={colors.gray}
                 value={phone}

@@ -19,7 +19,7 @@ export default function Contacts() {
   const snapPoints = [screenHeight * 0.5];
   const router = useRouter()
   const userId = user?.id || ''
-  const { contacts, error, isLoading, onRefresh, refreshing } = ContactsListUser({ userId })
+  const { contacts, error, isLoading, onRefresh, refreshing } = ContactsListUser(userId!)
   const [selectedContact, setSelectedContact] = useState<string | null>(null);
   const [name, setName] = useState("")
 
@@ -45,7 +45,7 @@ export default function Contacts() {
   if (error) {
     return (
       <View style={[stylesListContacst.container, { backgroundColor: colors.backgroundColorContacts }]}>
-        <Text style={{ color: colors.text }}>{error}</Text>
+        <Text style={{ color: colors.text }}>{error.message}</Text>
       </View>
     )
   }

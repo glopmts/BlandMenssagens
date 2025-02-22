@@ -9,6 +9,7 @@ export const stylesChat = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 20,
     paddingTop: Platform.OS === "ios" ? 60 : 10,
+    position: "relative"
   },
   header: {
     alignItems: "center",
@@ -66,6 +67,7 @@ export const stylesChat = StyleSheet.create({
     textAlign: "right",
   },
   inputContainer: {
+    position: "relative",
     flexDirection: "row",
     paddingVertical: 12,
     paddingHorizontal: 16,
