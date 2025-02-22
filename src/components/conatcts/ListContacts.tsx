@@ -11,15 +11,14 @@ export default function ContactsScreen() {
   const { colors } = useTheme();
   const router = useRouter();
   const userId = user?.id || "";
-  const { contacts, commercialContacts, error, isLoading, onRefresh, refreshing } = ContactsListUser({ userId });
-
+  const { contacts, commercialContacts, error, isLoading, onRefresh, refreshing } = ContactsListUser(userId!);
 
   const ContactListItem = ({ item, colors, router }: any) => {
     const lastSeenText = item?.lastOnline
       ? new Date(item.lastOnline).toLocaleString()
       : "Nunca visto";
 
-    const contactImage = item.imageurl || item.image
+    const contactImage = item.image
     const contactName = item.name || "Unknown"
 
     const renderContactImage = () => {
@@ -38,7 +37,7 @@ export default function ContactsScreen() {
     return (
       <TouchableOpacity
         style={[stylesListContacst.contactItem, { backgroundColor: colors.cardColor }]}
-        onPress={() => router.navigate(`/(pages)/menssagens/${item.contact_id}`)}
+        onPress={() => router.navigate(`/(pages)/menssagens/${item.search_token}`)}
       >
         {renderContactImage()}
         <View>
@@ -65,7 +64,7 @@ export default function ContactsScreen() {
   if (error) {
     return (
       <View style={[stylesListContacst.container, { backgroundColor: colors.backgroundColorContacts }]}>
-        <Text style={{ color: colors.text }}>{error}</Text>
+        <Text style={{ color: colors.text }}>{error.message}</Text>
       </View>
     );
   }

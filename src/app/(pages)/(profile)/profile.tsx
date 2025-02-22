@@ -1,5 +1,5 @@
-import { formatPhoneNumber } from '@/components/FormatNumberFront';
-import UserData from '@/hooks/useData';
+import { formatPhoneNumber } from '@/components/types/FormatNumberFront';
+import UserDataInfor from '@/hooks/useData';
 import { useTheme } from '@/hooks/useTheme';
 import { useUser } from '@clerk/clerk-expo';
 import React from 'react';
@@ -9,9 +9,9 @@ const ProfileScreen = () => {
   const { user } = useUser();
   const { colors } = useTheme()
   const userId = user?.id || '';
-  const { isLoader, userData } = UserData({ userId })
+  const { isLoading, userData } = UserDataInfor({ userId })
 
-  if (isLoader) {
+  if (isLoading) {
     return (
       <View style={[stylesProfile.container, { backgroundColor: colors.background }]}>
         <ActivityIndicator size={30} color={colors.text} />

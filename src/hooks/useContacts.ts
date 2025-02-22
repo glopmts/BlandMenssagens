@@ -1,48 +1,85 @@
 import { Contact } from "@/types/interfaces";
 import { url } from "@/utils/url-api";
+import { useQuery } from "@tanstack/react-query";
 import { useCallback, useEffect, useState } from "react";
 import { Alert } from "react-native";
 
-export function ContactsListUser({ userId }: { userId: string }) {
-  const [contacts, setContacts] = useState<Contact[]>([]);
+type NoContactProps = {
+  phone: string;
+  isUnknown: boolean;
+};
+
+type ContactListProps = {
+  userId: string;
+  chatWithToken: string;
+}
+
+type ContactResp = {
+  contact: {
+    id: string;
+    name: string;
+    phone: string;
+    imageurl: string | null;
+    isOnline: boolean;
+    lastOnline: Date;
+  }
+}
+
+export function ContactsListUser(userId: string, chatWithToken?: string) {
   const [commercialContacts, setCommercialContacts] = useState<Contact[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [noContact, setNoContact] = useState<NoContactProps | null>(null);
+  const [contact, setContact] = useState<ContactResp | null>(null);
 
-  const loadContacts = async (userId: string) => {
-    if (!userId) return;
-
-    try {
+  const { data: contacts, error, isLoading, refetch } = useQuery({
+    queryKey: ["contacts", userId],
+    queryFn: async () => {
+      if (!userId) return [];
       const response = await fetch(`${url}/api/user/contacts/${userId}`);
       const data = await response.json();
-
       if (!response.ok) {
-        setError("Não foi possível buscar contatos.");
         throw new Error(data.message || "Erro ao buscar contatos.");
       }
+      return (data.contacts || []);
+    },
+    staleTime: 1000 * 60 * 1,
+    enabled: !!userId,
+  })
 
-      setContacts(data.contacts);
-      setCommercialContacts(data.commercialContacts);
+  const fetchContactInfo = async () => {
+    if (!userId || !chatWithToken) return;
+
+    try {
+      const response = await fetch(`${url}/api/user/contactInfor`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, chatWithToken: chatWithToken }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || "Erro ao buscar informações do contato.");
+      }
+      setNoContact(data.contactInfo);
+      setContact(data.contact);
     } catch (error: any) {
       Alert.alert("Erro", error.message);
-    } finally {
-      setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    if (userId) {
-      loadContacts(userId);
+    if (chatWithToken) {
+      fetchContactInfo();
     }
-  }, [userId]);
+  }, [userId, chatWithToken]);
 
-  const onRefresh = useCallback(() => {
+  const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    if (userId) {
-      loadContacts(userId).finally(() => setRefreshing(false));
+    try {
+      await refetch();
+    } finally {
+      setRefreshing(false);
     }
-  }, [userId]);
+  }, [refetch]);
 
   return {
     onRefresh,
@@ -50,7 +87,8 @@ export function ContactsListUser({ userId }: { userId: string }) {
     commercialContacts,
     isLoading,
     error,
-    loadContacts,
     refreshing,
+    noContact,
+    contact
   };
 }

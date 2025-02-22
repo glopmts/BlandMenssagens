@@ -1,23 +1,22 @@
+import UserDataInfor from "@/hooks/useData";
 import { useTheme } from "@/hooks/useTheme";
-import { User } from "@/types/interfaces";
-import { url } from "@/utils/url-api";
 import { useAuth, useUser } from "@clerk/clerk-expo";
 import { MaterialIcons } from "@expo/vector-icons";
 import { DrawerContentComponentProps } from "@react-navigation/drawer";
 import { router } from "expo-router";
-import { useEffect, useRef, useState } from "react";
-import { Alert, Animated, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import LinksOptionsDrawer from "../LinksOptionsDrawer";
+import { useRef, useState } from "react";
+import { Animated, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import Sidebar from "../SidebarProfile";
+import LinksOptionsDrawer from "../types/LinksOptionsDrawer";
 import UserInforDrawer from "./DrawerIUserHeader";
 
 export function DrawerContent(drawerProps: DrawerContentComponentProps) {
   const { colors } = useTheme();
   const { user } = useUser();
-  const userId = user?.id;
-  const [userData, setDataUser] = useState<User | null>(null);
-  const [loader, setLoader] = useState(true);
+  const userId = user?.id ?? '';
   const { signOut } = useAuth();
+  const { isLoading, userData } = UserDataInfor({ userId })
+
 
   const [isExpanded, setIsExpanded] = useState(false);
   const heightAnim = useRef(new Animated.Value(0)).current;
@@ -33,26 +32,6 @@ export function DrawerContent(drawerProps: DrawerContentComponentProps) {
   };
 
 
-  const fetchUserData = async () => {
-    if (!userId) return;
-    setLoader(true);
-    try {
-      const res = await fetch(`${url}/api/user/${userId}`);
-      if (!res.ok) throw new Error("Erro ao buscar usuário");
-      const userData: User = await res.json();
-      setDataUser(userData);
-    } catch (error) {
-      Alert.alert("Erro", "Falha ao buscar dados do usuário");
-    } finally {
-      setLoader(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchUserData();
-  }, [userId]);
-
-
   const signOutUser = async () => {
     await signOut()
     drawerProps.navigation.closeDrawer();
@@ -62,7 +41,7 @@ export function DrawerContent(drawerProps: DrawerContentComponentProps) {
   return (
     <View style={[styles.drawerContent, { backgroundColor: colors.background }]}>
       <View>
-        <UserInforDrawer isExpanded={isExpanded} toggleMenu={toggleMenu} isLoader={loader} colors={colors} userData={userData} />
+        <UserInforDrawer isExpanded={isExpanded} toggleMenu={toggleMenu} isLoader={isLoading} colors={colors} userData={userData} />
       </View>
       <View style={{ flex: 1 }}>
         {isExpanded && (

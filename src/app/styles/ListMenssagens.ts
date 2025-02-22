@@ -71,7 +71,8 @@ export const stylesListMenssagens = StyleSheet.create({
     gap: 5
   },
   imagePlaceholderText: {
-    color: "#555",
+    color: "#ccc",
     fontSize: 15,
+    fontWeight: "700"
   },
 });

@@ -6,39 +6,45 @@ import { useEffect, useState } from "react";
 import { Alert, ToastAndroid } from "react-native";
 
 
-export function useMessages(chatId: string, userId: string) {
+export function useMessages(userId: string, chatId: string,) {
   const [messages, setMessages] = useState<Mensagens[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!socket) return
+
     socket.on(`chat:${userId}`, (message: Mensagens) => {
-      setMessages((prev) => [...prev, message]);
-    });
+      setMessages((prev) => [...prev, message])
+    })
 
     return () => {
-      socket.off(`chat:${userId}`);
-      socket.off(`chat:${chatId}`);
-    };
-  }, [userId, chatId]);
+      socket.off(`chat:${userId}`)
+    }
+  }, [socket, userId])
 
   useEffect(() => {
     async function fetchMessages() {
       try {
-        const res = await fetch(`${url}/api/user/menssagens?userId=${userId}&chatWith=${chatId}`);
-        if (!res.ok) throw new Error("Erro ao buscar mensagens");
-        const data = await res.json();
-        setMessages(data);
+        setLoading(true)
+        const res = await fetch(`${url}/api/user/menssagens?userId=${userId}&chatWithToken=${chatId}`)
+
+        if (!res.ok) {
+          throw new Error("Failed to fetch messages")
+        }
+
+        const data = await res.json()
+        setMessages(data)
       } catch (error) {
-        console.error("Error fetching messages:", error);
-        setError("Erro ao carregar mensagens. Tente novamente mais tarde.");
+        console.error("Error fetching messages:", error)
+        setError("Failed to load messages. Please try again later.")
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
     }
 
-    fetchMessages();
-  }, [userId, url]);
+    fetchMessages()
+  }, [userId, chatId, url])
 
 
   const updateMessageStatus = async (messageId: string, status: string) => {
@@ -111,8 +117,8 @@ export function useMessages(chatId: string, userId: string) {
   const sendMessage = (content: string, legendImage: string, imageUrl: string[] = [], audioUrl?: string) => {
     const newMessage: Mensagens = {
       id: Date.now().toString(),
-      sender_id: chatId,
-      receiver_id: userId,
+      sender_id: userId,
+      receiver_id: chatId,
       content,
       created_at: new Date().toISOString(),
       status: "send",
@@ -122,7 +128,20 @@ export function useMessages(chatId: string, userId: string) {
       audioUrl: audioUrl
     };
 
-    socket.emit("send_message", newMessage);
+    setMessages((prev) => [...prev, newMessage])
+
+    try {
+      socket.emit("send_message", {
+        sender_id: userId,
+        receiver_id: chatId,
+        content,
+        images: imageUrl,
+        audioUrl,
+      })
+    } catch (error) {
+      setMessages((prev) => prev.filter((msg) => msg.id !== newMessage.id))
+      setError("Failed to send message. Please try again.")
+    }
   };
 
   return { messages, loading, sendMessage, handleDeleteMessage, updateMessageStatus };

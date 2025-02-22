@@ -1,14 +1,14 @@
 import NoAddContact from "@/components/conatcts/NoContactAdd"
 import AudioRecorder from "@/components/messages/MessageAud"
 import { MessageItem } from "@/components/messages/MessagensRenderChat"
+import { ContactsListUser } from "@/hooks/useContacts"
 import { useMessages } from "@/hooks/useMessages"
 import { useTheme } from "@/hooks/useTheme"
 import { deleteOldImage } from "@/types/deleteImagemFirebase"
 import type { Mensagens } from "@/types/interfaces"
 import { storage } from "@/utils/firebase"
 import { downloadImage } from "@/utils/saveImagesUrl"
-import { url } from "@/utils/url-api"
-import { useClerk } from "@clerk/clerk-expo"
+import { useAuth } from "@clerk/clerk-expo"
 import { Ionicons } from "@expo/vector-icons"
 import * as Clipboard from "expo-clipboard"
 import { Image } from "expo-image"
@@ -16,7 +16,7 @@ import * as ImageManipulator from "expo-image-manipulator"
 import * as ImagePicker from "expo-image-picker"
 import { useLocalSearchParams } from "expo-router"
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage"
-import { useEffect, useRef, useState } from "react"
+import { useRef, useState } from "react"
 import {
   ActivityIndicator,
   FlatList,
@@ -30,31 +30,24 @@ import {
 import { stylesChat } from "../../../styles/stylesChat"
 
 export default function MensagensPageRender() {
-  const { user } = useClerk()
+  const { userId } = useAuth()
   const { id } = useLocalSearchParams<{ id: string }>()
+  const chatWithToken = id;
   const { colors } = useTheme()
-  const { messages, loading, sendMessage, handleDeleteMessage, updateMessageStatus } = useMessages(user?.id || "", id)
+  const {
+    messages,
+    loading,
+    sendMessage,
+    handleDeleteMessage,
+    updateMessageStatus
+  } = useMessages(userId || "", id)
+  const { noContact } = ContactsListUser(userId!, chatWithToken)
   const [newMessage, setNewMessage] = useState("")
   const [legendImage, setLegendImage] = useState("")
   const [imageUrl, setImageUrl] = useState<string[]>([])
   const [isUploading, setIsUploading] = useState(false)
   const flatListRef = useRef<FlatList>(null)
-  const [phoneNumber, setPhoneNumber] = useState<string | null>(null)
-  const [imageUser, setImage] = useState<string | null>(null)
-  const contactId = messages.find((d) => user?.id === d.receiver_id)?.sender_id
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const response = await fetch(`${url}/api/user/${contactId}`)
-      if (!response.ok) {
-        throw new Error("Failed to fetch user data")
-      }
-      const userData = await response.json()
-      setPhoneNumber(userData.phone)
-      setImage(userData.imageurl)
-    }
-    fetchData()
-  }, [contactId])
 
   const handleCopy = async (text: string, id: string, legendImage: string) => {
     try {
@@ -98,7 +91,7 @@ export default function MensagensPageRender() {
           const blob = await response.blob()
           const storageRef = ref(
             storage,
-            `app-menssagens/chat-images/${Date.now()}-${user?.id}-${Math.random().toString(36).substring(7)}`,
+            `app-menssagens/chat-images/${Date.now()}-${userId}-${Math.random().toString(36).substring(7)}`,
           )
           await uploadBytes(storageRef, blob)
           return getDownloadURL(storageRef)
@@ -136,7 +129,7 @@ export default function MensagensPageRender() {
       const blob = await response.blob()
       const audioRef = ref(
         storage,
-        `app-menssagens/audio/${Date.now()}-${user?.id}-${Math.random().toString(36).substring(7)}.m4a`,
+        `app-menssagens/audio/${Date.now()}-${userId}-${Math.random().toString(36).substring(7)}.m4a`,
       )
       await uploadBytes(audioRef, blob)
       const audioUrl = await getDownloadURL(audioRef)
@@ -177,13 +170,12 @@ export default function MensagensPageRender() {
   const renderMessage = ({ item }: { item: Mensagens }) => (
     <MessageItem
       item={item}
-      user={user}
-      imageUser={imageUser!}
+      userId={userId!}
       colors={colors}
       handleCopy={handleCopy}
       downloadImage={downloadImage}
       updateMessageStatus={updateMessageStatus}
-      deleteMessage={(messageId) => handleDeleteMessage(messageId, item.created_at, user?.id!, item.audioUrl)}
+      deleteMessage={(messageId) => handleDeleteMessage(messageId, item.created_at, userId!, item.audioUrl)}
     />
   )
 
@@ -194,9 +186,11 @@ export default function MensagensPageRender() {
           As menssagens são protegidas com a criptografia de ponta a ponta e ficam somente entre você e os participantes
           desta conversa.
         </Text>
-        <View>
-          <NoAddContact number={phoneNumber!} contactId={id!} userId={user?.id!} />
-        </View>
+        {noContact && (
+          <View>
+            <NoAddContact number={noContact.phone!} contactId={id!} userId={userId!} />
+          </View>
+        )}
       </View>
       <FlatList
         ref={flatListRef}

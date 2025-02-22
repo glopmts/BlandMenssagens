@@ -1,5 +1,6 @@
 import { ClerkLoaded, ClerkProvider } from '@clerk/clerk-expo';
 import { PortalProvider } from '@gorhom/portal';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import * as Notifications from "expo-notifications";
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -31,6 +32,7 @@ Notifications.setNotificationHandler({
 
 function RootLayoutNav() {
   const { colors } = useTheme();
+
   return (
     <>
       <StatusBar />
@@ -52,15 +54,19 @@ function RootLayoutNav() {
 }
 
 export default function RootLayout() {
+  const queryClient = new QueryClient();
+
   return (
     <ErrorBoundary>
-      <ThemeProvider>
-        <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
-          <ClerkLoaded>
-            <RootLayoutNav />
-          </ClerkLoaded>
-        </ClerkProvider>
-      </ThemeProvider>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider>
+          <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
+            <ClerkLoaded>
+              <RootLayoutNav />
+            </ClerkLoaded>
+          </ClerkProvider>
+        </ThemeProvider>
+      </QueryClientProvider>
     </ErrorBoundary>
   );
 }

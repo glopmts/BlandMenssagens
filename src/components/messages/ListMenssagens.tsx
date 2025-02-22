@@ -4,6 +4,7 @@ import { socket } from "@/server/socket-io";
 import { Mensagens } from "@/types/interfaces";
 import { url } from "@/utils/url-api";
 import { useUser } from "@clerk/clerk-expo";
+import { useQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, Alert, FlatList, Image, RefreshControl, Text, TouchableOpacity, View } from "react-native";
@@ -12,60 +13,63 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 
 export default function MensagensList() {
   const { user } = useUser();
+  const userId = user?.id || "";
   const [mensagens, setMensagens] = useState<Mensagens[]>([]);
-  const [isLoading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const { colors } = useTheme();
 
-  const fetchMensagens = async (userId: string) => {
-    setLoading(true);
-    try {
-      const response = await fetch(`${url}/api/user/recipeMenssagens/${userId}`);
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "Erro ao buscar mensagens.");
+  const { error, isLoading, refetch } = useQuery({
+    queryKey: ['mensagens', userId],
+    queryFn: async () => {
+      try {
+        const response = await fetch(`${url}/api/user/recipeMenssagens/${userId}`);
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.message || "Erro ao buscar mensagens.");
+        }
+        const mensagensFormatadas = data.map((mensagem: any) => ({
+          ...mensagem,
+          id: mensagem.id.toString(),
+          sender_id: mensagem.sender_id.toString(),
+          receiver_id: mensagem.receiver_id.toString(),
+          contact_name: mensagem.contact_name,
+        }));
+        const groupedMessages = groupMessagesByContact(mensagensFormatadas);
+        setMensagens(groupedMessages);
+        return data;
+      } catch (error) {
+        Alert.alert("Erro", "Não foi possível carregar as mensagens", [
+          { text: "OK", onPress: () => { } },
+        ]);
+        return [];
       }
+    },
+    enabled: !!userId,
+    refetchInterval: 10000,
+  })
 
-      const mensagensFormatadas = data.map((mensagem: any) => ({
-        ...mensagem,
-        id: mensagem.id.toString(),
-        sender_id: mensagem.sender_id.toString(),
-        receiver_id: mensagem.receiver_id.toString(),
-      }));
-
-      const groupedMessages = groupMessagesByContact(mensagensFormatadas);
-      setMensagens(groupedMessages);
-    } catch (error: any) {
-      Alert.alert("Erro", error.message);
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await refetch();
     } finally {
-      setLoading(false);
       setRefreshing(false);
     }
-  };
-
-  const onRefresh = useCallback(() => {
-    setRefreshing(true);
-    fetchMensagens(user?.id!);
-  }, [user?.id]);
+  }, [userId, refetch]);
 
   useEffect(() => {
-    if (!user?.id) return;
-
-    fetchMensagens(user.id);
-
-    socket.on(`chat:${user.id}`, (novaMensagem: Mensagens) => {
-
+    if (!userId) return;
+    refetch();
+    socket.on(`chat:${userId}`, (novaMensagem: Mensagens) => {
       setMensagens((mensagensAtuais) => {
         const mensagensAtualizadas = [...mensagensAtuais, novaMensagem];
         return groupMessagesByContact(mensagensAtualizadas);
       });
     });
-
     return () => {
-      socket.off(`chat:${user.id}`);
+      socket.off(`chat:${userId}`);
     };
-  }, [user?.id]);
+  }, [userId]);
 
   const groupMessagesByContact = (messages: Mensagens[]) => {
     const groupedMessages: { [key: string]: Mensagens } = {};
@@ -120,11 +124,11 @@ interface ListMensagensProps {
 function ListMensagens({ item, colors }: ListMensagensProps) {
   const { user } = useUser()
   const lastSeenText = item.created_at ? new Date(item.created_at).toLocaleString() : "Never seen"
+  const isSenderLoggedUser = item.sender_id === user?.id
+  const otherUser = isSenderLoggedUser ? item.receiver : item.sender
 
-  const isSender = item.sender_id === user?.id
-  const contact = isSender ? item.receiver : item.sender
-  const contactImage = contact.imageurl
-  const contactName = contact.name || "Unknown"
+  const contactImage = otherUser?.imageurl ?? ''
+  const contactName = item.contact_name || "Unknown"
 
   const renderContactImage = () => {
     if (contactImage) {
@@ -142,7 +146,7 @@ function ListMensagens({ item, colors }: ListMensagensProps) {
   return (
     <TouchableOpacity
       style={stylesListMenssagens.messagesItem}
-      onPress={() => router.navigate(`/(pages)/menssagens/${contact.clerk_id}`)}
+      onPress={() => router.navigate(`/(pages)/menssagens/${otherUser.search_token}`)}
     >
       {renderContactImage()}
       <View style={stylesListMenssagens.contaInfo}>

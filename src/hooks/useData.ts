@@ -1,69 +1,46 @@
+import { User } from "@/types/interfaces";
 import { url } from "@/utils/url-api";
-import { useCallback, useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Alert } from "react-native";
 
 interface UserProps {
   userId: string;
 }
 
-interface UserState {
-  id?: string;
+interface UserData {
+  id: string;
   name: string;
   imageurl: string | null;
   isOnline: boolean;
-  isLoader: boolean;
-  error: string | null;
   phone?: string | null;
   email?: string | null;
 }
 
-export default function UserData({ userId }: UserProps) {
-  const [state, setState] = useState<UserState>({
-    name: "",
-    imageurl: null,
-    isOnline: false,
-    isLoader: true,
-    error: null,
-  });
-  const [userData, setUser] = useState<UserState | null>(null);
+export default function useUserData({ userId }: UserProps) {
+  const { data, error, isLoading } = useQuery<User>({
+    queryKey: ["userData", userId],
+    queryFn: async () => {
+      if (!userId) throw new Error("ID do usuário inválido");
 
-  const fetchData = useCallback(async () => {
-    if (!userId) return;
-
-    try {
       const response = await fetch(`${url}/api/user/${userId}`);
-      if (!response.ok) {
-        throw new Error("Failed to fetch user data");
-      }
-      const userData = await response.json();
-      setState({
-        name: userData.name,
-        imageurl: userData.imageurl,
-        isOnline: userData.isOnline,
-        isLoader: false,
-        error: null,
-      });
-      setUser(userData);
-    } catch (error) {
-      setState((prevState) => ({
-        ...prevState,
-        isLoader: false,
-        error: (error as Error).message || "Unknown error",
-      }));
-      Alert.alert("Error", "Failed to fetch user data");
-    }
-  }, [userId]);
+      if (!response.ok) throw new Error("Falha ao buscar dados do usuário");
 
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+      const userData = await response.json();
+      return userData;
+    },
+    refetchInterval: 60000,
+    refetchOnWindowFocus: true,
+    staleTime: 1000 * 60 * 15,
+    enabled: !!userId,
+  });
+
+  if (error) {
+    Alert.alert("Erro", error.message);
+  }
 
   return {
-    name: state.name,
-    image: state.imageurl,
-    isOnline: state.isOnline,
-    isLoader: state.isLoader,
-    error: state.error,
-    userData: userData
+    userData: data,
+    isLoading,
+    error,
   };
 }

@@ -7,6 +7,7 @@ export interface Contact {
   clerk_id?: string;
   image?: string | null;
   created_at: Date;
+  isUnknown: boolean;
   phoneNumbers?: { number: string }[];
 }
 
@@ -18,9 +19,12 @@ export interface User {
   imageurl?: string | null;
   email: string | null;
   last_seen: Date;
+  isOnline?: boolean;
+  search_token?: string;
 }
 
 export interface Mensagens {
+  contact_name?: string;
   sender?: any;
   receiver?: any;
   id: string
@@ -42,7 +46,8 @@ export interface Mensagens {
 
 export interface MessageProperties {
   item: Mensagens
-  user: any
+  user?: any
+  userId: string
   colors: any
   imageUser?: string
   handleCopy: (text: string, messageId: string, legendImage: string) => void

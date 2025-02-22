@@ -2,13 +2,13 @@ import { User } from "@/types/interfaces";
 import { AntDesign } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { ActivityIndicator, Image, Platform, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { formatPhoneNumber } from "../FormatNumberFront";
 import { ThemeToggle } from "../ThemeToggle";
+import { formatPhoneNumber } from "../types/FormatNumberFront";
 
 interface UserProps {
   user?: User;
   colors: any;
-  userData: User | null;
+  userData?: User | null;
   isLoader?: boolean;
   toggleMenu: () => void;
   isExpanded: boolean;

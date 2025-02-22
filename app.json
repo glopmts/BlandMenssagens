@@ -2,7 +2,7 @@
   "expo": {
     "name": "BlobSend",
     "slug": "app-messagens",
-    "version": "1.0.5",
+    "version": "1.0.6",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
@@ -18,16 +18,14 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/splash-icon.png",
-        "backgroundColor": "#1E1E1E"
+        "foregroundImage": "./assets/images/splash-icon.png"      
       },
       "permissions": [
         "android.permission.READ_CONTACTS",
         "android.permission.WRITE_CONTACTS"
       ],
       "package": "com.glopblog.glopsend",
-      "googleServicesFile": "./path/google-services.json",
-      "useNextNotificationsApi": true
+      "googleServicesFile": "./path/google-services.json"
     },
     "web": {
       "bundler": "metro",
@@ -69,7 +67,7 @@
           "savePhotosPermission": "Allow $(BlobSend) to save photos.",
           "isAccessMediaLocationEnabled": true
         }
-      ]
+      ]    
     ],
    "notification": {
       "icon": "./assets/images/notification-icon.png",

@@ -10,15 +10,24 @@ export default function LayoutProfile() {
   const { user } = useUser();
   const userId = user?.id || "";
   const { colors } = useTheme();
-  const { name, image, isOnline, isLoader } = UserData({ userId })
+  const { isLoading, error, userData } = UserData({ userId })
 
-  if (isLoader) {
+  if (isLoading) {
     return (
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         <ActivityIndicator size={28} color={colors.text} />
       </View>
     );
   }
+
+  if (error) {
+    return (
+      <View style={[styles.container, { backgroundColor: colors.backgroundColorContacts }]}>
+        <Text style={{ color: colors.text }}>{error.message}</Text>
+      </View>
+    );
+  }
+
   return (
     <>
       <Stack
@@ -38,10 +47,10 @@ export default function LayoutProfile() {
           options={{
             headerTitle: () => (
               <View style={styles.headerIcons}>
-                {image ? (
+                {userData?.imageurl ? (
                   <Image
                     style={{ width: 40, height: 40, borderRadius: 30 }}
-                    source={{ uri: image }}
+                    source={{ uri: userData.imageurl }}
                   />
                 ) : (
                   <View
@@ -55,16 +64,16 @@ export default function LayoutProfile() {
                     }}
                   >
                     <Text style={[styles.headerTitle, { color: colors.text }]}>
-                      {name?.charAt(0).toUpperCase() || ""}
+                      {userData?.name?.charAt(0).toUpperCase() || ""}
                     </Text>
                   </View>
                 )}
                 <View>
                   <Text style={[styles.headerTitle, { color: colors.text }]}>
-                    {name || 'No name'}
+                    {userData?.name || 'No name'}
                   </Text>
-                  <Text style={[styles.headerOnline, { color: isOnline ? colors.primary : colors.gray }]}>
-                    {isOnline ? "Online" : "Offline"}
+                  <Text style={[styles.headerOnline, { color: userData?.isOnline ? colors.primary : colors.gray }]}>
+                    {userData?.isOnline ? "Online" : "Offline"}
                   </Text>
                 </View>
               </View>

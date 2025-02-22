@@ -1,14 +1,14 @@
 import DropwMenu from "@/components/drawer/DropwMenu"
+import { ContactsListUser } from "@/hooks/useContacts"
 import { handleChatUser, handleClearMenssagens } from "@/hooks/useMessages"
 import { useTheme } from "@/hooks/useTheme"
-import { url } from "@/utils/url-api"
 import { useUser } from "@clerk/clerk-expo"
 import { Ionicons } from "@expo/vector-icons"
 import { format, } from "date-fns"
 import { formatDistanceToNow } from "date-fns/formatDistanceToNow"
 import { Image } from "expo-image"
 import { router, Stack, useLocalSearchParams } from "expo-router"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { Alert, Modal, SafeAreaView, Text, TouchableOpacity, View } from "react-native"
 import { stylesLayoutId } from "../../../styles/stylesLayout-id"
 
@@ -18,41 +18,11 @@ export default function MensagensLayout() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const chatWith = id;
   const userId = user?.id;
-  const [name, setName] = useState<string>("")
-  const [phone, setPhone] = useState<string>("")
-  const [image, setImage] = useState<string | null>(null)
-  const [lastOnline, setLastOnline] = useState<string>("")
-  const [isOnline, setIsOnline] = useState(false)
   const [dropdown, setDropdown] = useState(false)
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [clearModalVisible, setClearModalVisible] = useState(false);
+  const { contact } = ContactsListUser(userId!, id)
 
-  useEffect(() => {
-    const fetchData = async () => {
-      if (userId) {
-        const res = await fetch(`${url}/api/user/contactInfor`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            userId,
-            contactId: id,
-          }),
-        })
-        if (!res.ok) {
-          throw new Error(`Error fetching user data: ${res.status}`)
-        }
-        const userData = await res.json()
-        setName(userData.name)
-        setPhone(userData.phone)
-        setImage(userData.image)
-        setIsOnline(userData.user.isOnline)
-        setLastOnline(userData.user.lastOnline)
-      }
-    }
-    fetchData()
-  }, [userId])
 
   const formatLastOnline = (lastOnlineDate?: string) => {
     if (!lastOnlineDate) return "Data indisponível"
@@ -123,10 +93,10 @@ export default function MensagensLayout() {
             headerTitle: () => (
               <TouchableOpacity>
                 <View style={stylesLayoutId.containerInfor}>
-                  {image ? (
+                  {contact?.contact?.imageurl ? (
                     <Image
                       style={{ width: 40, height: 40, borderRadius: 30 }}
-                      source={{ uri: image }}
+                      source={{ uri: contact.contact.imageurl }}
                     />
                   ) : (
                     <View
@@ -140,14 +110,16 @@ export default function MensagensLayout() {
                       }}
                     >
                       <Text style={[stylesLayoutId.headerTitle, { color: colors.text }]}>
-                        {name?.charAt(0).toUpperCase() || "MG"}
+                        {contact?.contact?.name?.charAt(0).toUpperCase() || "MG"}
                       </Text>
                     </View>
                   )}
                   <View>
-                    <Text style={[stylesLayoutId.headerTitle, { color: colors.text }]}>{name || phone || 'Desconhecido'}</Text>
-                    <Text style={[stylesLayoutId.onlineStatus, { color: isOnline ? colors.primary : colors.gray }]}>
-                      {isOnline ? "Online" : formatLastOnline(lastOnline)}
+                    <Text style={[stylesLayoutId.headerTitle, { color: colors.text }]}>{contact?.contact?.name || contact?.contact?.phone || 'Desconhecido'}</Text>
+                    <Text style={[stylesLayoutId.onlineStatus, { color: contact?.contact.isOnline ? colors.primary : colors.gray }]}>
+                      {contact?.contact?.isOnline ? "Online" : formatLastOnline(
+                        contact?.contact?.lastOnline?.toString()
+                      )}
                     </Text>
                   </View>
                 </View>
