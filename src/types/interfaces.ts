@@ -69,3 +69,19 @@ export interface AudioConfirmation {
   uri: string
   duration?: number
 }
+
+export interface StoryInterface {
+  id: string;
+  user_id: string;
+  imageUrl?: string;
+  text?: string;
+  videoUrl?: string;
+  user?: {
+    imageUrl: string;
+    name: string;
+  };
+  contact?: {
+    imageUrl: string;
+    name: string;
+  };
+}

@@ -1,3 +1,4 @@
+import { StoryInterface } from "@/types/interfaces";
 import { url } from "@/utils/url-api";
 import { useQuery } from "@tanstack/react-query";
 import { Alert } from "react-native";
@@ -14,7 +15,7 @@ export default function StoriesUser(userId: string) {
       }
       return (data);
     },
-    staleTime: 1000 * 60 * 1,
+    staleTime: 1000,
     enabled: !!userId,
   })
 
@@ -26,13 +27,8 @@ export default function StoriesUser(userId: string) {
   }
 }
 
-type Story = {
-  imageUrl?: string;
-  text?: string;
-  videosUrl?: string;
-}
 
-export const createStory = async (userId: string, story: Story) => {
+export const createStory = async (userId: string, story: StoryInterface) => {
   try {
     const response = await fetch(`${url}/api/user/storiesCreate`, {
       method: "POST",

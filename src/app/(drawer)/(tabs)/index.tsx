@@ -8,6 +8,7 @@ import MenssagensList from "@/components/messages/ListMenssagens"
 import { useTheme } from "@/hooks/useTheme"
 import { updateUserOnlineStatus } from "@/utils/userStatus"
 
+import RenderStoriesUsers from "@/components/stories/renderStories"
 import { stylesHome } from "../../styles/stylesHome"
 
 export default function TabOneScreen() {
@@ -66,6 +67,7 @@ export default function TabOneScreen() {
 
   return (
     <View style={[stylesHome.container, { backgroundColor: colors.background }]}>
+      <RenderStoriesUsers />
       <MenssagensList />
       <ContactsScreen />
     </View>
