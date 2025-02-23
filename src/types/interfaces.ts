@@ -40,9 +40,10 @@ export interface Mensagens {
   deleted_at_sender?: Date;
   contact_image?: string | null;
   images: string[],
-  files: string[],
+  filesUrls: string[],
   status: "send" | "delivered" | "read"
   audioUrl?: string;
+  audiosUrls?: string[]
 }
 
 export interface MessageProperties {
@@ -53,6 +54,18 @@ export interface MessageProperties {
   imageUser?: string
   handleCopy: (text: string, messageId: string, legendImage: string) => void
   downloadImage: (image: string) => void
-  deleteMessage: (messageId: string, created_at: string) => void;
+  downloadFiles: (filesUrls: string) => void
+  deleteMessage: (messageId: string[]) => void;
   updateMessageStatus: (messageId: string, newStatus: string) => void;
+}
+
+export interface FilePreview {
+  uri: string
+  type: string
+  name: string
+  size?: number
+}
+export interface AudioConfirmation {
+  uri: string
+  duration?: number
 }

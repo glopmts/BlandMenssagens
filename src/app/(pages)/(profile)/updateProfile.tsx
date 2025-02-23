@@ -1,5 +1,5 @@
 import { useTheme } from "@/hooks/useTheme";
-import { deleteOldImage } from "@/types/deleteImagemFirebase";
+import { deleteOldImage } from "@/types/DeleteItensFirabese";
 import { storage } from "@/utils/firebase";
 import { url } from "@/utils/url-api";
 import { useClerk } from "@clerk/clerk-expo";

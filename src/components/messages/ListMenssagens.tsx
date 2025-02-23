@@ -4,6 +4,7 @@ import { socket } from "@/server/socket-io";
 import { Mensagens } from "@/types/interfaces";
 import { url } from "@/utils/url-api";
 import { useUser } from "@clerk/clerk-expo";
+import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
@@ -154,11 +155,20 @@ function ListMensagens({ item, colors }: ListMensagensProps) {
           <Text style={[stylesListMenssagens.contactName, { color: colors.text }]}>{contactName}</Text>
           <Text style={stylesListMenssagens.lastSeen}>{lastSeenText}</Text>
         </View>
-        {item.content ? (
-          <Text dataDetectorType="all" numberOfLines={2} style={[stylesListMenssagens.messageText, { color: colors.text }]}>{item.content}</Text>
-        ) : item.legendImage ? (
-          <Text dataDetectorType="all" numberOfLines={2} style={[stylesListMenssagens.messageText, { color: colors.text }]}>{item.legendImage}</Text>
-        ) : item.audioUrl ? (
+        {item.content && item.content.trim() !== "" ? (
+          <Text dataDetectorType="all" numberOfLines={2} style={[stylesListMenssagens.messageText, { color: colors.text }]}>
+            {item.content}
+          </Text>
+        ) : item.legendImage && item.legendImage.trim() !== "" ? (
+          <Text dataDetectorType="all" numberOfLines={2} style={[stylesListMenssagens.messageText, { color: colors.text }]}>
+            {item.legendImage}
+          </Text>
+        ) : item.filesUrls && Array.isArray(item.filesUrls) && item.filesUrls.length > 0 ? (
+          <View style={stylesListMenssagens.imagePlaceholder}>
+            <Ionicons name="file-tray" size={14} color={colors.text} />
+            <Text style={stylesListMenssagens.imagePlaceholderText}>Arquivo</Text>
+          </View>
+        ) : item.audioUrl && item.audioUrl.trim() !== "" ? (
           <View style={stylesListMenssagens.imagePlaceholder}>
             <Icon name="volume-up" size={14} color={colors.text} />
             <Text style={stylesListMenssagens.imagePlaceholderText}>Enviou um áudio</Text>

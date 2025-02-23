@@ -22,7 +22,9 @@ type ContactResp = {
     imageurl: string | null;
     isOnline: boolean;
     lastOnline: Date;
-  }
+  },
+  name: string;
+
 }
 
 export function ContactsListUser(userId: string, chatWithToken?: string) {

@@ -13,7 +13,6 @@ export const stylesChat = StyleSheet.create({
   },
   header: {
     alignItems: "center",
-    borderBottomWidth: 1,
     marginBottom: 16,
   },
   headerText: {
@@ -180,5 +179,31 @@ export const stylesChat = StyleSheet.create({
   deletedMessage: {
     color: "gray",
     fontStyle: "italic",
-  }
+  },
+
+  filePreviewContainer: {
+    padding: 8,
+    borderTopWidth: 1,
+  },
+  filePreview: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 12,
+    borderRadius: 8,
+    gap: 12,
+  },
+  fileInfo: {
+    flex: 1,
+  },
+  fileName: {
+    fontSize: 14,
+    fontWeight: "500",
+  },
+  fileSize: {
+    fontSize: 12,
+    marginTop: 2,
+  },
+  removeFileButton: {
+    padding: 4,
+  },
 })

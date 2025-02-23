@@ -23,7 +23,6 @@ export default function MensagensLayout() {
   const [clearModalVisible, setClearModalVisible] = useState(false);
   const { contact } = ContactsListUser(userId!, id)
 
-
   const formatLastOnline = (lastOnlineDate?: string) => {
     if (!lastOnlineDate) return "Data indisponível"
 
@@ -115,7 +114,7 @@ export default function MensagensLayout() {
                     </View>
                   )}
                   <View>
-                    <Text style={[stylesLayoutId.headerTitle, { color: colors.text }]}>{contact?.contact?.name || contact?.contact?.phone || 'Desconhecido'}</Text>
+                    <Text style={[stylesLayoutId.headerTitle, { color: colors.text }]}>{contact?.name || contact?.contact?.phone || 'Desconhecido'}</Text>
                     <Text style={[stylesLayoutId.onlineStatus, { color: contact?.contact.isOnline ? colors.primary : colors.gray }]}>
                       {contact?.contact?.isOnline ? "Online" : formatLastOnline(
                         contact?.contact?.lastOnline?.toString()

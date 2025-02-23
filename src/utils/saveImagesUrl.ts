@@ -1,8 +1,8 @@
 
-import * as FileSystem from 'expo-file-system'
-import * as MediaLibrary from "expo-media-library"
-import { Platform, ToastAndroid } from "react-native"
-
+import * as FileSystem from 'expo-file-system';
+import * as MediaLibrary from "expo-media-library";
+import * as Sharing from "expo-sharing";
+import { Alert, Platform, ToastAndroid } from "react-native";
 
 export const downloadImage = async (imageUrl: string) => {
   try {
@@ -41,3 +41,32 @@ export const downloadImage = async (imageUrl: string) => {
     return null
   }
 }
+
+
+export const downloadFiles = async (fileUrl: string) => {
+  try {
+    const fileName = "arquivos_bland";
+    if (!FileSystem.documentDirectory) {
+      throw new Error("Diretório de documentos não está disponível.");
+    }
+
+    const directory = FileSystem.documentDirectory + "files/";
+    const fileUri = directory + fileName;
+
+    const dirInfo = await FileSystem.getInfoAsync(directory);
+    if (!dirInfo.exists) {
+      await FileSystem.makeDirectoryAsync(directory, { intermediates: true });
+    }
+
+    const { uri } = await FileSystem.downloadAsync(fileUrl, fileUri);
+
+    if (await Sharing.isAvailableAsync()) {
+      await Sharing.shareAsync(uri);
+    } else {
+      Alert.alert("Download concluído", "O arquivo foi salvo em: " + uri);
+    }
+  } catch (error) {
+    console.error("Erro ao baixar o arquivo:", error);
+    Alert.alert("Erro", "Não foi possível baixar o arquivo.");
+  }
+};

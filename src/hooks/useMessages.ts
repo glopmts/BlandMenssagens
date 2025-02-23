@@ -1,10 +1,16 @@
 import { socket } from "@/server/socket-io";
-import { deleteOldAudio, deleteOldImage } from "@/types/deleteImagemFirebase";
 import { Mensagens } from "@/types/interfaces";
 import { url } from "@/utils/url-api";
 import { useEffect, useState } from "react";
 import { Alert, ToastAndroid } from "react-native";
 
+type SendMenssagenProps = {
+  content: string,
+  legendImage: string,
+  imageUrl: string[],
+  audioUrl?: string,
+  filesUrls: string[],
+}
 
 export function useMessages(userId: string, chatId: string,) {
   const [messages, setMessages] = useState<Mensagens[]>([]);
@@ -26,13 +32,10 @@ export function useMessages(userId: string, chatId: string,) {
   useEffect(() => {
     async function fetchMessages() {
       try {
-        setLoading(true)
         const res = await fetch(`${url}/api/user/menssagens?userId=${userId}&chatWithToken=${chatId}`)
-
         if (!res.ok) {
           throw new Error("Failed to fetch messages")
         }
-
         const data = await res.json()
         setMessages(data)
       } catch (error) {
@@ -61,60 +64,36 @@ export function useMessages(userId: string, chatId: string,) {
     }
   }
 
-  const handleDeleteMessage = async (messageId: string, createdAt: string, userId: string, audioUrl?: string, images: string[] = []) => {
-    const messageTime = new Date(createdAt).getTime();
-    const currentTime = new Date().getTime();
-    const timeDifference = currentTime - messageTime;
-    const fiveMinutes = 5 * 60 * 1000;
+  const handleDeleteMessage = async (messageId: string[]) => {
 
-    const deleteImages = async () => {
-      if (images.length > 0) {
-        await Promise.all(images.map((url) => deleteOldImage(url)));
-      }
-    };
-
-    const deleteAudio = async () => {
-      if (audioUrl) {
-        await deleteOldAudio(audioUrl);
-      }
-    };
-
-    Alert.alert(
-      "Deletar Mensagem",
-      timeDifference < fiveMinutes
-        ? "Esta mensagem será deletada para todos. Tem certeza?"
-        : "Esta mensagem será deletada apenas para você. Tem certeza?",
-      [
-        { text: "Cancelar", style: "cancel" },
-        {
-          text: "Deletar",
-          onPress: async () => {
-            try {
-              await deleteImages();
-              await deleteAudio();
-
-              await fetch(`${url}/api/user/deleteMessagen`, {
-                method: "DELETE",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ messageId, userId }),
-              });
-
-              ToastAndroid.show("Mensagem deletada com sucesso!", ToastAndroid.SHORT);
-              setMessages((prev) => prev.filter((msg) => msg.id !== messageId));
-            } catch (err) {
-              Alert.alert("Erro ao deletar mensagem");
-              console.error("Erro deletando mensagem:", err);
-            }
-          },
+    try {
+      const res = await fetch(`${url}/api/user/deleteMessages`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
         },
-      ]
-    );
+        body: JSON.stringify({
+          userId,
+          messageId: messageId,
+        }),
+      });
+
+      if (!res.ok) {
+        const { error } = await res.json()
+        throw new Error(error?.message || "Unknown error")
+      }
+
+      ToastAndroid.show("Mensagem deletada com sucesso!", ToastAndroid.SHORT);
+      setMessages((prev) => prev.filter((msg) => !messageId.includes(msg.id)));
+    } catch (err) {
+      Alert.alert("Erro ao deletar mensagem");
+      console.error("Erro deletando mensagem:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-
-  const sendMessage = (content: string, legendImage: string, imageUrl: string[] = [], audioUrl?: string, filesUrls: string[] = []) => {
+  const sendMessage = ({ content, legendImage, imageUrl, audioUrl, filesUrls }: SendMenssagenProps) => {
     const newMessage: Mensagens = {
       id: Date.now().toString(),
       sender_id: userId,
@@ -126,7 +105,7 @@ export function useMessages(userId: string, chatId: string,) {
       is_deleted: false,
       images: imageUrl,
       audioUrl: audioUrl,
-      files: filesUrls
+      filesUrls: filesUrls,
     };
 
     setMessages((prev) => [...prev, newMessage])
@@ -136,9 +115,13 @@ export function useMessages(userId: string, chatId: string,) {
         sender_id: userId,
         receiver_id: chatId,
         content,
+        created_at: new Date().toISOString(),
+        status: "send",
+        legendImage: legendImage,
+        is_deleted: false,
         images: imageUrl,
-        audioUrl,
-        files: filesUrls
+        audioUrl: audioUrl,
+        filesUrls: filesUrls,
       })
     } catch (error) {
       setMessages((prev) => prev.filter((msg) => msg.id !== newMessage.id))

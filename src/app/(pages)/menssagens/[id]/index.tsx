@@ -5,10 +5,10 @@ import { MessageItem } from "@/components/messages/MessagensRenderChat"
 import { ContactsListUser } from "@/hooks/useContacts"
 import { useMessages } from "@/hooks/useMessages"
 import { useTheme } from "@/hooks/useTheme"
-import { deleteOldImage } from "@/types/deleteImagemFirebase"
-import type { Mensagens } from "@/types/interfaces"
+import { deleteOldImage } from "@/types/DeleteItensFirabese"
+import type { FilePreview, Mensagens } from "@/types/interfaces"
 import { storage } from "@/utils/firebase"
-import { downloadImage } from "@/utils/saveImagesUrl"
+import { downloadFiles, downloadImage } from "@/utils/saveImagesUrl"
 import { useAuth } from "@clerk/clerk-expo"
 import { Ionicons } from "@expo/vector-icons"
 import * as Clipboard from "expo-clipboard"
@@ -27,14 +27,14 @@ import {
   TextInput,
   ToastAndroid,
   TouchableOpacity,
-  View,
+  View
 } from "react-native"
 import { stylesChat } from "../../../styles/stylesChat"
 
 export default function MensagensPageRender() {
   const { userId } = useAuth()
   const { id } = useLocalSearchParams<{ id: string }>()
-  const chatWithToken = id;
+  const chatWithToken = id
   const { colors } = useTheme()
   const {
     messages,
@@ -48,10 +48,10 @@ export default function MensagensPageRender() {
   const [legendImage, setLegendImage] = useState("")
   const [imageUrl, setImageUrl] = useState<string[]>([])
   const [isUploading, setIsUploading] = useState(false)
-  const flatListRef = useRef<FlatList>(null);
+  const flatListRef = useRef<FlatList>(null)
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false)
-  const [files, setFiles] = useState("")
-
+  const [files, setFiles] = useState<string[]>([])
+  const [filePreview, setFilePreview] = useState<FilePreview | null>(null)
 
   const handleCopy = async (text: string, id: string, legendImage: string) => {
     try {
@@ -112,17 +112,22 @@ export default function MensagensPageRender() {
   }
 
   const handleSend = async () => {
-    if (!newMessage.trim() && (!imageUrl || imageUrl.length === 0)) return
-
+    if (!newMessage.trim() && (!imageUrl || imageUrl.length === 0) && (!files || files.length === 0)) return
     let uploadedImageUrls: string[] = []
     if (imageUrl.length > 0) {
       uploadedImageUrls = await uploadImage(imageUrl)
     }
-
-    await sendMessage(newMessage, legendImage, uploadedImageUrls)
+    await sendMessage({
+      content: newMessage,
+      legendImage,
+      imageUrl: uploadedImageUrls,
+      filesUrls: files,
+    })
     setNewMessage("")
     setImageUrl([])
     setLegendImage("")
+    setFiles([])
+    setFilePreview(null)
     Keyboard.dismiss()
     flatListRef.current?.scrollToEnd({ animated: true })
   }
@@ -137,8 +142,13 @@ export default function MensagensPageRender() {
       )
       await uploadBytes(audioRef, blob)
       const audioUrl = await getDownloadURL(audioRef)
-
-      await sendMessage("", "", [], audioUrl)
+      await sendMessage({
+        content: "",
+        legendImage: "",
+        imageUrl: [],
+        filesUrls: [],
+        audioUrl,
+      })
     } catch (error) {
       console.error("Error sending audio message:", error)
       ToastAndroid.show("Error sending audio message", ToastAndroid.SHORT)
@@ -148,7 +158,6 @@ export default function MensagensPageRender() {
   const closeImage = async () => {
     try {
       await Promise.all(imageUrl.map((url) => deleteOldImage(url)))
-
       setImageUrl([])
       setLegendImage("")
       ToastAndroid.show("Imagem removida!", ToastAndroid.SHORT)
@@ -165,22 +174,46 @@ export default function MensagensPageRender() {
   const handleFiles = async () => {
     try {
       const result = await DocumentPicker.getDocumentAsync({
-        type: "*/*",
+        type: [
+          "application/pdf",
+          "application/msword",
+          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          "application/vnd.ms-excel",
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          "application/vnd.ms-powerpoint",
+          "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+          "text/plain",
+        ],
         copyToCacheDirectory: true,
-      });
+      })
 
-      if (result.canceled) return;
+      if (result.canceled) return
+      const file = result.assets[0]
+      setFilePreview({
+        uri: file.uri,
+        type: file.mimeType || "application/octet-stream",
+        name: file.name,
+        size: file.size,
+      })
 
-      console.log("Arquivo selecionado:", result.assets[0].uri);
-      return result.assets[0].uri;
+      const response = await fetch(file.uri)
+      const blob = await response.blob()
+      const fileRef = ref(storage, `app-menssagens/files/${Date.now()}-${userId}-${file.name}`)
+      await uploadBytes(fileRef, blob)
+      const fileUrl = await getDownloadURL(fileRef)
+      setFiles((prev) => [...prev, fileUrl]);
+      return fileUrl
     } catch (error) {
-      console.error("Erro ao selecionar arquivo:", error);
+      console.error("Erro ao selecionar arquivo:", error)
+      ToastAndroid.show("Erro ao selecionar arquivo", ToastAndroid.SHORT)
     }
   }
 
-  const handleCam = () => {
+  const handleAudiosUrls = async () => {
 
   }
+
+  const handleCam = () => { }
 
   if (loading) {
     return (
@@ -202,18 +235,40 @@ export default function MensagensPageRender() {
       colors={colors}
       handleCopy={handleCopy}
       downloadImage={downloadImage}
+      downloadFiles={downloadFiles}
       updateMessageStatus={updateMessageStatus}
-      deleteMessage={(messageId) => handleDeleteMessage(messageId, item.created_at, userId!, item.audioUrl)}
+      deleteMessage={(messageId) => handleDeleteMessage(messageId, userId!, item.audioUrl)}
     />
   )
+
+  const renderFilePreview = () => {
+    if (!filePreview) return null
+
+    return (
+      <View style={stylesChat.filePreviewContainer}>
+        <View style={[stylesChat.filePreview, { backgroundColor: colors.card }]}>
+          <Ionicons name="document-outline" size={24} color={colors.text} />
+          <View style={stylesChat.fileInfo}>
+            <Text style={[stylesChat.fileName, { color: colors.text }]} numberOfLines={1}>
+              {filePreview.name}
+            </Text>
+            {filePreview.size && (
+              <Text style={[stylesChat.fileSize, { color: colors.gray }]}>
+                {(filePreview.size / 1024).toFixed(1)} KB
+              </Text>
+            )}
+          </View>
+          <TouchableOpacity onPress={() => setFilePreview(null)} style={stylesChat.removeFileButton}>
+            <Ionicons name="close-circle" size={24} color={colors.gray} />
+          </TouchableOpacity>
+        </View>
+      </View>
+    )
+  }
 
   return (
     <View style={[stylesChat.container, { backgroundColor: colors.background }]}>
       <View style={[stylesChat.header, { borderBottomColor: colors.borderColor }]}>
-        <Text style={[stylesChat.headerText, { color: colors.gray }]}>
-          As menssagens são protegidas com a criptografia de ponta a ponta e ficam somente entre você e os participantes
-          desta conversa.
-        </Text>
         {noContact && (
           <View>
             <NoAddContact number={noContact.phone!} contactId={id!} userId={userId!} />
@@ -229,6 +284,7 @@ export default function MensagensPageRender() {
         onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
         onLayout={() => flatListRef.current?.scrollToEnd({ animated: true })}
       />
+
       {imageUrl && imageUrl.length > 0 && (
         <View style={stylesChat.imagePreviewContainer}>
           {imageUrl.map((url, index) => (
@@ -240,12 +296,16 @@ export default function MensagensPageRender() {
         </View>
       )}
 
+      {filePreview && renderFilePreview()}
+
       {isKeyboardOpen && (
         <MenuOptions
           onCilckImage={pickImage}
           onCilckFiles={handleFiles}
           onCilckCam={handleCam}
           isVisible={isKeyboardOpen}
+          onclickAudiosUrls={handleAudiosUrls}
+          onClose={() => setIsKeyboardOpen(false)}
         />
       )}
 
@@ -298,7 +358,7 @@ export default function MensagensPageRender() {
           <ActivityIndicator size={24} color={colors.primary} style={{ marginLeft: 12 }} />
         ) : (
           <View style={{ position: "relative" }}>
-            {newMessage.trim() || imageUrl.length > 0 ? (
+            {newMessage.trim() || imageUrl.length > 0 || files.length > 0 ? (
               <TouchableOpacity
                 style={[stylesChat.sendButton, { backgroundColor: colors.primary }]}
                 onPress={handleSend}
@@ -306,7 +366,10 @@ export default function MensagensPageRender() {
                 <Ionicons name="send" size={24} color="#fff" />
               </TouchableOpacity>
             ) : (
-              <TouchableOpacity style={[stylesChat.sendButton, { backgroundColor: colors.backgroundColorContacts }]} onPress={handleMenu}>
+              <TouchableOpacity
+                style={[stylesChat.sendButton, { backgroundColor: colors.backgroundColorContacts }]}
+                onPress={handleMenu}
+              >
                 <Ionicons name="file-tray" size={24} color={colors.gray} />
               </TouchableOpacity>
             )}

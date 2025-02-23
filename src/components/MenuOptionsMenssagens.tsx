@@ -1,5 +1,5 @@
 import { useTheme } from "@/hooks/useTheme";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { useEffect, useRef } from "react";
 import { Animated, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
@@ -7,10 +7,12 @@ type MenuProps = {
   onCilckImage: () => void;
   onCilckFiles: () => void;
   onCilckCam: () => void;
+  onclickAudiosUrls: () => void;
   isVisible: boolean;
+  onClose: () => void;
 };
 
-const MenuOptions = ({ onCilckFiles, onCilckImage, onCilckCam, isVisible }: MenuProps) => {
+const MenuOptions = ({ onCilckFiles, onCilckImage, onCilckCam, onclickAudiosUrls, isVisible, onClose }: MenuProps) => {
   const { colors } = useTheme();
   const animation = useRef(new Animated.Value(0)).current;
 
@@ -37,7 +39,10 @@ const MenuOptions = ({ onCilckFiles, onCilckImage, onCilckCam, isVisible }: Menu
         <View style={styles.itensDetails}>
           <TouchableOpacity
             style={[styles.itens, { backgroundColor: colors.backgroundButton, borderColor: colors.borderColor }]}
-            onPress={onCilckImage}
+            onPress={() => {
+              onCilckImage();
+              onClose();
+            }}
           >
             <Ionicons name="image" size={24} color={colors.text} />
           </TouchableOpacity>
@@ -46,7 +51,10 @@ const MenuOptions = ({ onCilckFiles, onCilckImage, onCilckCam, isVisible }: Menu
         <View style={styles.itensDetails}>
           <TouchableOpacity
             style={[styles.itens, { backgroundColor: colors.backgroundButton, borderColor: colors.borderColor }]}
-            onPress={onCilckFiles}
+            onPress={() => {
+              onCilckFiles();
+              onClose();
+            }}
           >
             <Ionicons name="file-tray-full" size={24} color={colors.text} />
           </TouchableOpacity>
@@ -55,16 +63,32 @@ const MenuOptions = ({ onCilckFiles, onCilckImage, onCilckCam, isVisible }: Menu
         <View style={styles.itensDetails}>
           <TouchableOpacity
             style={[styles.itens, { backgroundColor: colors.backgroundButton, borderColor: colors.borderColor }]}
-            onPress={onCilckCam}
+            onPress={() => {
+              onCilckCam();
+              onClose();
+            }}
           >
             <Ionicons name="camera" size={24} color={colors.text} />
           </TouchableOpacity>
           <Text style={{ color: colors.text, fontSize: 12 }}>Camera</Text>
         </View>
+        <View style={styles.itensDetails}>
+          <TouchableOpacity
+            style={[styles.itens, { backgroundColor: colors.backgroundButton, borderColor: colors.borderColor }]}
+            onPress={() => {
+              onclickAudiosUrls();
+              onClose();
+            }}
+          >
+            <MaterialIcons name="audiotrack" size={24} color={colors.text} />
+          </TouchableOpacity>
+          <Text style={{ color: colors.text, fontSize: 12 }}>Áudio</Text>
+        </View>
       </View>
     </Animated.View>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {
@@ -82,6 +106,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-around",
     width: "100%",
+    flexWrap: "wrap",
     paddingHorizontal: 16,
   },
   itensDetails: {
