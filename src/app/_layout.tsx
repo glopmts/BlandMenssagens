@@ -41,11 +41,10 @@ function RootLayoutNav() {
           <Stack
             screenOptions={{
               headerShown: false,
-              animation: 'fade',
-              presentation: 'transparentModal',
+              animation: 'simple_push',
+              presentation: 'fullScreenModal',
             }}
           >
-
           </Stack>
         </PortalProvider>
       </GestureHandlerRootView>

@@ -1,20 +1,19 @@
-import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
+import { ActivityIndicator, StyleSheet } from 'react-native';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 
 export function LoadingScreen() {
   const { colors } = useTheme();
 
   return (
-    <Animated.View 
+    <Animated.View
       entering={FadeIn}
       exiting={FadeOut}
       style={[
         styles.container,
-        { backgroundColor: colors.background }
       ]}
     >
-      <ActivityIndicator size="large" color={colors.primary} />
+      <ActivityIndicator size={28} color={colors.primary} />
     </Animated.View>
   );
 }
@@ -24,5 +23,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#1E1E1E'
   },
 });

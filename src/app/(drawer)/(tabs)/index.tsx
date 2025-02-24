@@ -8,7 +8,7 @@ import MenssagensList from "@/components/messages/ListMenssagens"
 import { useTheme } from "@/hooks/useTheme"
 import { updateUserOnlineStatus } from "@/utils/userStatus"
 
-import RenderStoriesUsers from "@/components/stories/renderStories"
+import RenderStoriesUsers from "@/components/storys/renderStories"
 import { stylesHome } from "../../styles/stylesHome"
 
 export default function TabOneScreen() {

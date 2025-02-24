@@ -70,12 +70,29 @@ export interface AudioConfirmation {
   duration?: number
 }
 
-export interface StoryInterface {
+export interface Story {
+  isViewed: boolean;
   id: string;
-  user_id: string;
   imageUrl?: string;
   text?: string;
   videoUrl?: string;
+  createdAt?: string;
+  user_id: string;
+  user?: {
+    imageUrl: string;
+    name: string;
+  };
+  contact?: {
+    imageUrl: string;
+    name: string;
+  };
+
+}
+
+export interface StoryInterface {
+  id: string;
+  user_id: string;
+  stories: Story[];
   user?: {
     imageUrl: string;
     name: string;
