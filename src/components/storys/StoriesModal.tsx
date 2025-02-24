@@ -1,24 +1,29 @@
 import { useTheme } from "@/hooks/useTheme"
 import type { StoryInterface } from "@/types/interfaces"
 import { FontAwesome5 } from "@expo/vector-icons"
+import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet"
 import { Image } from "expo-image"
 import { LinearGradient } from "expo-linear-gradient"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Dimensions, Modal, StyleSheet, Text, TouchableOpacity, View } from "react-native"
 
 interface StoryModalProps {
-  visible: boolean
-  onClose: () => void
-  story: StoryInterface
+  visible: boolean;
+  onClose: () => void;
+  story: StoryInterface;
+  userId: string;
+  user_id: string
 }
 
 const { width, height } = Dimensions.get("window")
 
-export const StoryModal = ({ visible, onClose, story }: StoryModalProps) => {
+export const StoryModal = ({ visible, onClose, story, userId, user_id }: StoryModalProps) => {
   const [currentStoryIndex, setCurrentStoryIndex] = useState(0)
   const [progress, setProgress] = useState(0)
   const [paused, setPaused] = useState(false)
+  const [isMenuVisible, setIsMenuVisible] = useState(false)
   const { colors } = useTheme()
+  const bottomSheetRef = useRef<BottomSheet>(null);
 
   const currentStory = story.stories[currentStoryIndex]
 
@@ -46,7 +51,6 @@ export const StoryModal = ({ visible, onClose, story }: StoryModalProps) => {
     }
   }, [visible, paused, onClose, story.stories.length]);
 
-
   const handlePress = (event: any) => {
     const x = event.nativeEvent.locationX
     const screenWidth = Dimensions.get("window").width
@@ -65,6 +69,24 @@ export const StoryModal = ({ visible, onClose, story }: StoryModalProps) => {
       }
     }
   }
+
+  const handleDeleteStatus = () => {
+    console.log("Status excluído")
+    setIsMenuVisible(false)
+  }
+
+  const openMenu = () => {
+    bottomSheetRef.current?.expand();
+    setIsMenuVisible(true);
+    setPaused(true);
+  };
+
+  const closeMenu = () => {
+    bottomSheetRef.current?.close();
+    setIsMenuVisible(false);
+    setPaused(false);
+  };
+
 
   return (
     <Modal visible={visible} animationType="fade" transparent>
@@ -100,7 +122,7 @@ export const StoryModal = ({ visible, onClose, story }: StoryModalProps) => {
                 </View>
               </View>
               <View>
-                <TouchableOpacity>
+                <TouchableOpacity onPress={openMenu} style={styles.menuButton}>
                   <FontAwesome5 name="ellipsis-v" size={14} color={colors.text} />
                 </TouchableOpacity>
               </View>
@@ -118,6 +140,34 @@ export const StoryModal = ({ visible, onClose, story }: StoryModalProps) => {
             )}
           </TouchableOpacity>
         </LinearGradient>
+
+        {isMenuVisible && (
+          <BottomSheet
+            ref={bottomSheetRef}
+            snapPoints={["50%"]}
+            backgroundStyle={[styles.container, { backgroundColor: colors.background }]}
+            handleStyle={{ backgroundColor: colors.backgroundHeader, borderTopLeftRadius: 16, borderTopRightRadius: 16 }}
+            handleIndicatorStyle={{ backgroundColor: colors.text }}
+            backdropComponent={({ style }) => (
+              <TouchableOpacity
+                style={[style]}
+                activeOpacity={1}
+                onPress={closeMenu}
+              />
+            )}
+          >
+            <BottomSheetView style={[styles.contentContainer, { backgroundColor: colors.background }]}>
+              {userId === user_id && (
+                <TouchableOpacity onPress={handleDeleteStatus} style={[styles.button, { backgroundColor: colors.red, borderColor: colors.borderColor }]}>
+                  <Text style={styles.textButton}>Excluir Status</Text>
+                </TouchableOpacity>
+              )}
+              <TouchableOpacity onPress={handleDeleteStatus} style={[styles.button, { backgroundColor: colors.card, borderColor: colors.borderColor }]}>
+                <Text style={styles.textButton}>Compartilhar</Text>
+              </TouchableOpacity>
+            </BottomSheetView>
+          </BottomSheet>
+        )}
       </View>
     </Modal>
   )
@@ -149,7 +199,11 @@ const styles = StyleSheet.create({
     height: "100%",
     backgroundColor: "#fff",
   },
+  menuButton: {
+    padding: 16,
+  },
   headerInfor: {
+    zIndex: 400,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
@@ -174,5 +228,42 @@ const styles = StyleSheet.create({
     height: height - 100,
     marginTop: 50,
   },
+  menuContainer: {
+    position: "absolute",
+    top: 60,
+    right: 16,
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    padding: 8,
+    elevation: 4,
+  },
+  menuItem: {
+    padding: 8,
+  },
+  menuItemText: {
+    fontSize: 16,
+    color: "#000",
+  },
+  contentContainer: {
+    flex: 1,
+    padding: 16,
+    borderTopLeftRadius: 8,
+    borderTopRightRadius: 8,
+    paddingTop: 24,
+  },
+  button: {
+    padding: 16,
+    borderRadius: 8,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 16,
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    borderWidth: 1,
+  },
+  textButton: {
+    fontSize: 16,
+    color: "#fff",
+    fontWeight: "600",
+  }
 })
-

@@ -8,7 +8,7 @@ import MenssagensList from "@/components/messages/ListMenssagens"
 import { useTheme } from "@/hooks/useTheme"
 import { updateUserOnlineStatus } from "@/utils/userStatus"
 
-import RenderStoriesUsers from "@/components/storys/renderStories"
+import RenderStoriesUsers from "@/components/storys/Render-Stories"
 import { stylesHome } from "../../styles/stylesHome"
 
 export default function TabOneScreen() {
@@ -40,22 +40,6 @@ export default function TabOneScreen() {
     return () => subscription.remove()
   }, [user])
 
-
-  useEffect(() => {
-    updateUserOnlineStatus(user?.id, true);
-    const interval = setInterval(() => updateUserOnlineStatus(user?.id, true), 3000);
-    const handleAppStateChange = (nextAppState: string) => {
-      if (nextAppState === "background" || nextAppState === "inactive") {
-        updateUserOnlineStatus(user?.id, false);
-      }
-    };
-    const subscription = AppState.addEventListener("change", handleAppStateChange);
-    return () => {
-      clearInterval(interval);
-      subscription.remove();
-      updateUserOnlineStatus(user?.id, false);
-    };
-  }, [user]);
 
   if (!isLoaded) {
     return (

@@ -5,8 +5,8 @@ import { url } from "@/utils/url-api"
 import { useAuth } from "@clerk/clerk-expo"
 import { useMemo, useState } from "react"
 import { ActivityIndicator, Alert, StyleSheet, Text, View } from "react-native"
-import { StoryModal } from "./storieModal"
-import { StoryPreview } from "./storiePreview"
+import { StoryModal } from "./StoriesModal"
+import { StoryPreview } from "./StoriesPreview"
 
 const RenderStoriesUsers = () => {
   const { userId } = useAuth()
@@ -102,6 +102,8 @@ const RenderStoriesUsers = () => {
         <StoryModal
           visible={!!selectedStory}
           story={selectedStory}
+          userId={userId!}
+          user_id={selectedStory.user_id}
           onClose={() => {
             setSelectedStory(null)
             setCurrentStoryIndex(0)

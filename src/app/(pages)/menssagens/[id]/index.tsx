@@ -237,7 +237,7 @@ export default function MensagensPageRender() {
       downloadImage={downloadImage}
       downloadFiles={downloadFiles}
       updateMessageStatus={updateMessageStatus}
-      deleteMessage={(messageId) => handleDeleteMessage(messageId, userId!, item.audioUrl)}
+      deleteMessage={(messageId) => handleDeleteMessage(messageId)}
     />
   )
 

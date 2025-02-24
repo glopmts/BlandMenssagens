@@ -51,6 +51,7 @@ const BottomSheetComponent: React.FC<BottomSheetComponentProps> = ({ onSheetChan
         containerStyle={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
         backgroundStyle={[styles.container, { backgroundColor: colors.background }]}
         handleStyle={{ backgroundColor: colors.backgroundHeader, borderTopLeftRadius: 16, borderTopRightRadius: 16 }}
+        handleIndicatorStyle={{ backgroundColor: colors.text }}
         onChange={handleSheetChanges}
         onClose={() => setIsOpen(false)}
       >
