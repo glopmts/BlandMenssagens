@@ -71,7 +71,7 @@ const RenderStoriesUsers = () => {
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.card }]}>
+    <View style={[styles.container, { backgroundColor: colors.backgroundColorContacts }]}>
       <Text style={[styles.title, { color: colors.text }]}>Stories</Text>
       <View style={styles.storiesContainer}>
         {groupedStories?.map((story: StoryInterface) => {

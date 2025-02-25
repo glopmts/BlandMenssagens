@@ -3,6 +3,7 @@ import { useTheme } from "@/hooks/useTheme"
 import type { StoryInterface } from "@/types/interfaces"
 import { FontAwesome5 } from "@expo/vector-icons"
 import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet"
+import { ResizeMode, Video } from "expo-av"
 import { Image } from "expo-image"
 import { LinearGradient } from "expo-linear-gradient"
 import { useEffect, useRef, useState } from "react"
@@ -27,6 +28,7 @@ export const StoryModal = ({ visible, onClose, story, userId, user_id, storyId, 
   const [isMenuVisible, setIsMenuVisible] = useState(false)
   const { colors } = useTheme()
   const bottomSheetRef = useRef<BottomSheet>(null);
+  const videoRef = useRef<Video>(null);
 
   const currentStory = story.stories[currentStoryIndex]
 
@@ -91,6 +93,12 @@ export const StoryModal = ({ visible, onClose, story, userId, user_id, storyId, 
     setPaused(false);
   };
 
+  const handlePlaybackStatusUpdate = (status: any) => {
+    if (status.isLoaded) {
+      const newProgress = status.positionMillis / status.durationMillis;
+      setProgress(newProgress);
+    }
+  };
 
   return (
     <Modal visible={visible} animationType="fade" transparent>
@@ -141,6 +149,16 @@ export const StoryModal = ({ visible, onClose, story, userId, user_id, storyId, 
           >
             {currentStory.imageUrl && (
               <Image source={{ uri: currentStory.imageUrl }} style={styles.storyImage} contentFit="contain" />
+            )}
+            {currentStory.videoUrl && (
+              <Video
+                ref={videoRef}
+                source={{ uri: currentStory.videoUrl }}
+                shouldPlay={!paused}
+                resizeMode={ResizeMode.COVER}
+                style={styles.storyImage}
+                onPlaybackStatusUpdate={handlePlaybackStatusUpdate}
+              />
             )}
           </TouchableOpacity>
         </LinearGradient>
