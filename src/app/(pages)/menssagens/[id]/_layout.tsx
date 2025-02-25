@@ -1,5 +1,5 @@
 import DropwMenu from "@/components/drawer/DropwMenu"
-import { ContactsListUser } from "@/hooks/useContacts"
+import { ContactsListUser } from "@/hooks/contacts/useContacts"
 import { handleChatUser, handleClearMenssagens } from "@/hooks/useMessages"
 import { useTheme } from "@/hooks/useTheme"
 import { useUser } from "@clerk/clerk-expo"

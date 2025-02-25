@@ -1,11 +1,11 @@
 import { useTheme } from '@/hooks/useTheme';
 import { CreateStoryParams, MediaType } from '@/types/interfaces';
-import { AntDesign, Entypo, EvilIcons } from '@expo/vector-icons';
+import { Entypo, EvilIcons } from '@expo/vector-icons';
 import * as FileSystem from 'expo-file-system';
 import * as ImagePicker from 'expo-image-picker';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { useVideoPlayer, VideoView } from 'expo-video';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Image, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 interface MediaInfo {
   uri: string;
@@ -17,6 +17,12 @@ interface MediaInfo {
 export default function MediaPickerExample() {
   const [media, setMedia] = useState<MediaInfo | null>(null);
   const { colors } = useTheme();
+
+  useFocusEffect(
+    useCallback(() => {
+      setMedia(null);
+    }, [])
+  );
 
   const pickMedia = async () => {
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -119,9 +125,9 @@ export default function MediaPickerExample() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <TouchableOpacity style={styles.buttonBack} onPress={handleBack}>
+      {/* <TouchableOpacity style={styles.buttonBack} onPress={handleBack}>
         <AntDesign name="leftcircle" size={28} color="#fff" />
-      </TouchableOpacity>
+      </TouchableOpacity> */}
 
       {media && (
         <View style={styles.mediaContainer}>

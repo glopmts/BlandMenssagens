@@ -31,7 +31,6 @@ Notifications.setNotificationHandler({
 
 function RootLayoutNav() {
   const { colors } = useTheme();
-
   return (
     <>
       <StatusBar />
@@ -53,7 +52,6 @@ function RootLayoutNav() {
 
 export default function RootLayout() {
   const queryClient = new QueryClient();
-
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>

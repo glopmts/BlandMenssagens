@@ -1,7 +1,8 @@
 import { stylesListContacst } from "@/app/styles/ListContacts";
 import BottomSheetComponent from "@/components/BottomSheet";
 import AddContacts from "@/components/conatcts/AddContacts";
-import { ContactsListUser } from "@/hooks/useContacts";
+import { ContactsListUser } from "@/hooks/contacts/useContacts";
+import DeleteContact from "@/hooks/contacts/userDeleteContact";
 import { useTheme } from "@/hooks/useTheme";
 import { useUser } from "@clerk/clerk-expo";
 import { AntDesign } from "@expo/vector-icons";
@@ -23,10 +24,10 @@ export default function Contacts() {
   const [selectedContact, setSelectedContact] = useState<string | null>(null);
   const [name, setName] = useState("")
 
-  const handleDeleteContact = () => {
-    // Lógica para excluir o contato
-    console.log('Excluir contato:', selectedContact);
-    setSelectedContact(null); // Fechar o modal após a exclusão
+  const handleDeleteContact = async () => {
+    const { deleteContact } = DeleteContact({ userId, contactId: selectedContact! });
+    await deleteContact();
+    setSelectedContact(null);
   };
 
   if (isLoading) {
@@ -63,11 +64,11 @@ export default function Contacts() {
     return (
       <TouchableOpacity
         style={[styles.contactItem, { backgroundColor: colors.cardColor }]}
-        onPress={() => router.navigate(`/(pages)/menssagens/${item.contact_id}`)}
+        onPress={() => router.navigate(`/(pages)/menssagens/${item.search_token}`)}
         onLongPress={handleLongPress}
       >
-        {item?.imageurl ? (
-          <Image style={stylesListContacst.contactImage} source={{ uri: item?.imageurl }} />
+        {item?.image ? (
+          <Image style={stylesListContacst.contactImage} source={{ uri: item?.image }} />
         ) : (
           <View style={[stylesListContacst.contactImage, { backgroundColor: colors.primary }]}>
             <Text style={{ color: "white", fontWeight: "700", fontSize: 20 }}>{item?.name?.charAt(0)}</Text>
@@ -75,7 +76,7 @@ export default function Contacts() {
         )}
         <View>
           <Text style={[stylesListContacst.contactName, { color: colors.text }]}>{item?.name || "Nome não disponível"}</Text>
-          <Text style={[stylesListContacst.contactName, { color: colors.text }]}>{lastSeenText}</Text>
+          <Text style={[stylesListContacst.contacDate, { color: colors.text }]}>{lastSeenText}</Text>
         </View>
       </TouchableOpacity>
     )

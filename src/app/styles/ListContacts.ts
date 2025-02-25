@@ -48,4 +48,8 @@ export const stylesListContacst = StyleSheet.create({
     fontSize: 18,
     textAlign: "center",
   },
+  contacDate: {
+    fontSize: 13,
+    fontWeight: "600",
+  }
 })

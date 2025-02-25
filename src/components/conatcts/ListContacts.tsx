@@ -1,5 +1,5 @@
 import { stylesListContacst } from "@/app/styles/ListContacts"
-import { ContactsListUser } from "@/hooks/useContacts"
+import { ContactsListUser } from "@/hooks/contacts/useContacts"
 import { useTheme } from "@/hooks/useTheme"
 import { useUser } from "@clerk/clerk-expo"
 import { Image } from "expo-image"

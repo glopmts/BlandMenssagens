@@ -8,7 +8,7 @@ export function useNetworkStatus() {
 
   useEffect(() => {
     if (netInfo.isConnected === false) {
-      router.push("/(pages)/NetNoConnection");
+      router.push("/(pages)/NoConnectioWifi");
     }
   }, [netInfo.isConnected, router]);
 
