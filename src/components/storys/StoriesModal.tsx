@@ -6,6 +6,7 @@ import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet"
 import { ResizeMode, Video } from "expo-av"
 import { Image } from "expo-image"
 import { LinearGradient } from "expo-linear-gradient"
+import { useVideoPlayer } from "expo-video"
 import { useEffect, useRef, useState } from "react"
 import { Dimensions, Modal, StyleSheet, Text, TouchableOpacity, View } from "react-native"
 
@@ -99,6 +100,17 @@ export const StoryModal = ({ visible, onClose, story, userId, user_id, storyId, 
       setProgress(newProgress);
     }
   };
+
+  const videoSource = currentStory.videoUrl ?? '';
+
+  const player = useVideoPlayer(videoSource, player => {
+    player.currentTime,
+      player.volume = 1,
+      player.availableSubtitleTracks,
+      player.bufferOptions,
+      player.duration,
+      player.targetOffsetFromLive
+  })
 
   return (
     <Modal visible={visible} animationType="fade" transparent>

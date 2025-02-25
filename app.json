@@ -2,7 +2,7 @@
   "expo": {
     "name": "BlobSend",
     "slug": "app-messagens",
-    "version": "1.0.8",
+    "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
@@ -19,7 +19,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/splash-icon.png",
-        "backgroundColor": "#1E1E1E"     
+        "backgroundColor": "#1E1E1E"
       },
       "permissions": [
         "android.permission.READ_CONTACTS",
@@ -44,11 +44,10 @@
         }
       ],
       [
-        "expo-media-library",
+        "expo-video",
         {
-          "photosPermission": "Allow $(PRODUCT_NAME) to access your photos.",
-          "savePhotosPermission": "Allow $(PRODUCT_NAME) to save photos.",
-          "isAccessMediaLocationEnabled": true
+          "supportsBackgroundPlayback": true,
+          "supportsPictureInPicture": true
         }
       ],
       [
@@ -61,7 +60,7 @@
         "expo-notifications",
         {
           "icon": "./assets/images/notification-icon.png",
-          "color": "#",
+          "color": "#ffffff",
           "defaultChannel": "default",
           "enableBackgroundRemoteNotifications": false,
           "androidMode": "default",
@@ -76,9 +75,10 @@
           "savePhotosPermission": "Allow $(BlobSend) to save photos.",
           "isAccessMediaLocationEnabled": true
         }
-      ]    
+      ],
+      "expo-video"
     ],
-   "notification": {
+    "notification": {
       "icon": "./assets/images/notification-icon.png",
       "color": "#ffffff",
       "androidMode": "default",

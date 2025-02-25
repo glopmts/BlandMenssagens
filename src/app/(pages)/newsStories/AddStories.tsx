@@ -1,13 +1,12 @@
 import { useTheme } from '@/hooks/useTheme';
 import { CreateStoryParams, MediaType } from '@/types/interfaces';
 import { AntDesign, Entypo, EvilIcons } from '@expo/vector-icons';
-import { ResizeMode, Video } from 'expo-av';
 import * as FileSystem from 'expo-file-system';
 import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
+import { useVideoPlayer, VideoView } from 'expo-video';
 import { useState } from 'react';
 import { Image, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-
 interface MediaInfo {
   uri: string;
   width: number;
@@ -107,6 +106,17 @@ export default function MediaPickerExample() {
     setMedia(null);
   }
 
+  const videoSource = media?.uri ?? '';
+
+  const player = useVideoPlayer(videoSource, player => {
+    player.currentTime,
+      player.volume = 1,
+      player.availableSubtitleTracks,
+      player.bufferOptions,
+      player.duration,
+      player.targetOffsetFromLive
+  });
+
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <TouchableOpacity style={styles.buttonBack} onPress={handleBack}>
@@ -118,12 +128,7 @@ export default function MediaPickerExample() {
           {media.type === 'photo' ? (
             <Image source={{ uri: media.uri }} style={styles.media} />
           ) : (
-            <Video
-              source={{ uri: media.uri }}
-              style={styles.media}
-              useNativeControls
-              resizeMode={ResizeMode.COVER}
-            />
+            <VideoView style={styles.video} player={player} allowsFullscreen allowsPictureInPicture />
           )}
           <Text style={styles.mediaInfo}>
             Tamanho: {media.width}x{media.height}
@@ -200,5 +205,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     gap: 10,
+  },
+  video: {
+    width: '100%',
+    height: 275,
   },
 });

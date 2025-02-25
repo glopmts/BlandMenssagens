@@ -20,7 +20,6 @@ const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY!;
 
 Notifications.setNotificationHandler({
   handleNotification: async (notification) => {
-    console.log('Notificação recebida no primeiro plano:', notification);
     return {
       shouldShowAlert: true,
       shouldPlaySound: true,

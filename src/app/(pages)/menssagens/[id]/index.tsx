@@ -13,6 +13,7 @@ import { useAuth } from "@clerk/clerk-expo"
 import { Ionicons } from "@expo/vector-icons"
 import * as Clipboard from "expo-clipboard"
 import * as DocumentPicker from "expo-document-picker"
+import * as FileSystem from 'expo-file-system'
 import { Image } from "expo-image"
 import * as ImageManipulator from "expo-image-manipulator"
 import * as ImagePicker from "expo-image-picker"
@@ -213,7 +214,32 @@ export default function MensagensPageRender() {
 
   }
 
-  const handleCam = () => { }
+  const takePhoto = async () => {
+    const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
+    if (!permissionResult.granted) {
+      alert('Permissão para acessar a câmera é necessária!');
+      return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      allowsEditing: true,
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      const { uri } = result.assets[0];
+
+      if (!FileSystem.documentDirectory) {
+        alert('Falha ao acessar o diretório de documentos');
+        return;
+      }
+      const newUri = FileSystem.documentDirectory + uri.split('/').pop();
+      await FileSystem.copyAsync({ from: uri, to: newUri });
+
+      setImageUrl([newUri]);
+    }
+  };
+
 
   if (loading) {
     return (
@@ -296,13 +322,14 @@ export default function MensagensPageRender() {
         </View>
       )}
 
+
       {filePreview && renderFilePreview()}
 
       {isKeyboardOpen && (
         <MenuOptions
           onCilckImage={pickImage}
           onCilckFiles={handleFiles}
-          onCilckCam={handleCam}
+          onCilckCam={takePhoto}
           isVisible={isKeyboardOpen}
           onclickAudiosUrls={handleAudiosUrls}
           onClose={() => setIsKeyboardOpen(false)}

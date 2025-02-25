@@ -2,8 +2,8 @@ import { createStory } from '@/hooks/useStories';
 import { useTheme } from '@/hooks/useTheme';
 import { CreateStoryParams } from '@/types/interfaces';
 import { useAuth } from '@clerk/clerk-expo';
-import { ResizeMode, Video } from 'expo-av';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useVideoPlayer, VideoView } from 'expo-video';
 import { useState } from 'react';
 import { ActivityIndicator, Alert, Image, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { uploadMediaToFirebase } from './uploadMediaToFirebase';
@@ -46,6 +46,14 @@ export default function CreateStoryScreen() {
     }
   };
 
+  const videoSource = mediaUri ?? '';
+
+  const player = useVideoPlayer(videoSource, player => {
+    player.loop = true;
+    player.play();
+    player.currentTime,
+      player.volume = 1;
+  });
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -54,13 +62,7 @@ export default function CreateStoryScreen() {
           <Image source={{ uri: mediaUri }} alt="Imagem do story" style={styles.imagePreview} />
         )}
         {mediaType === 'video' && (
-          <Video
-            source={{ uri: mediaUri }}
-            style={styles.media}
-            useNativeControls
-            resizeMode={ResizeMode.COVER}
-            shouldPlay={false}
-          />
+          <VideoView style={styles.media} player={player} allowsFullscreen allowsPictureInPicture />
         )}
       </View>
       <TextInput
