@@ -1,7 +1,7 @@
-import { Story, StoryInterface } from "@/types/interfaces";
+import { Story } from "@/types/interfaces";
 import { url } from "@/utils/url-api";
 import { useQuery } from "@tanstack/react-query";
-import { Alert } from "react-native";
+import { Alert, ToastAndroid } from "react-native";
 
 export default function StoriesUser(userId: string) {
   const { data: stories, error, isLoading, refetch } = useQuery<{ stories: Story[]; viewedStories: Set<string> }>({
@@ -39,12 +39,12 @@ export default function StoriesUser(userId: string) {
 }
 
 
-export const createStory = async (userId: string, story: StoryInterface) => {
+export const createStory = async (userId: string, imageUrl: string, text: string, videoUrl: string) => {
   try {
     const response = await fetch(`${url}/api/user/storiesCreate`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId, ...story }),
+      body: JSON.stringify({ userId, imageUrl, text, videoUrl }),
     });
 
     const data = await response.json();
@@ -75,3 +75,44 @@ export const onStoryView = async (userId: string, storyId: string) => {
     throw error;
   }
 }
+
+export const handleDeleteStories = (userId: string, storyId: string, refetch: () => void) => {
+  Alert.alert(
+    "Excluir Story",
+    "Tem certeza que deseja excluir esta Story?",
+    [
+      {
+        text: "Cancelar",
+        style: "cancel",
+      },
+      {
+        text: "Excluir",
+        onPress: async () => {
+          try {
+            const res = await fetch(`${url}/api/user/stories/deleteStory`, {
+              method: "DELETE",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ userId, storyId }),
+            });
+
+            const data = await res.json();
+            if (!res.ok) {
+              throw new Error(data.error || "Erro desconhecido ao excluir Story.");
+            }
+
+            ToastAndroid.show("Story excluído com sucesso!", ToastAndroid.SHORT);
+            refetch();
+          } catch (error) {
+            if (error instanceof Error) {
+              console.error("Erro ao excluir Story:", error);
+              Alert.alert("Erro", error.message);
+            }
+          }
+        }
+      },
+    ],
+    { cancelable: true }
+  );
+};

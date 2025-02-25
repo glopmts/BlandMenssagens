@@ -25,7 +25,6 @@ export default function AppRoot() {
     }
   };
 
-
   useEffect(() => {
     initializeApp();
   }, [isLoaded, isSignedIn, user?.id]);

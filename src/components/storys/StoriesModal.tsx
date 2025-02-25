@@ -1,3 +1,4 @@
+import { handleDeleteStories } from "@/hooks/useStories"
 import { useTheme } from "@/hooks/useTheme"
 import type { StoryInterface } from "@/types/interfaces"
 import { FontAwesome5 } from "@expo/vector-icons"
@@ -12,12 +13,14 @@ interface StoryModalProps {
   onClose: () => void;
   story: StoryInterface;
   userId: string;
-  user_id: string
+  user_id: string;
+  storyId: string;
+  refetch: () => void;
 }
 
 const { width, height } = Dimensions.get("window")
 
-export const StoryModal = ({ visible, onClose, story, userId, user_id }: StoryModalProps) => {
+export const StoryModal = ({ visible, onClose, story, userId, user_id, storyId, refetch }: StoryModalProps) => {
   const [currentStoryIndex, setCurrentStoryIndex] = useState(0)
   const [progress, setProgress] = useState(0)
   const [paused, setPaused] = useState(false)
@@ -70,9 +73,10 @@ export const StoryModal = ({ visible, onClose, story, userId, user_id }: StoryMo
     }
   }
 
-  const handleDeleteStatus = () => {
-    console.log("Status excluído")
+  const handleDeleteStatus = async () => {
+    await handleDeleteStories(userId, storyId, refetch)
     setIsMenuVisible(false)
+    onClose()
   }
 
   const openMenu = () => {
@@ -162,7 +166,7 @@ export const StoryModal = ({ visible, onClose, story, userId, user_id }: StoryMo
                   <Text style={styles.textButton}>Excluir Status</Text>
                 </TouchableOpacity>
               )}
-              <TouchableOpacity onPress={handleDeleteStatus} style={[styles.button, { backgroundColor: colors.card, borderColor: colors.borderColor }]}>
+              <TouchableOpacity style={[styles.button, { backgroundColor: colors.card, borderColor: colors.borderColor }]}>
                 <Text style={styles.textButton}>Compartilhar</Text>
               </TouchableOpacity>
             </BottomSheetView>

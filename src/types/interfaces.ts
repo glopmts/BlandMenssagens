@@ -102,3 +102,10 @@ export interface StoryInterface {
     name: string;
   };
 }
+
+export type MediaType = 'photo' | 'video';
+
+export type CreateStoryParams = {
+  mediaUri: string;
+  mediaType: MediaType;
+}

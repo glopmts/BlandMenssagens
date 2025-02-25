@@ -15,6 +15,7 @@ const RenderStoriesUsers = () => {
   const { colors } = useTheme()
   const [currentStoryIndex, setCurrentStoryIndex] = useState(0);
   const [localViewedStories, setLocalViewedStories] = useState<Set<string>>(new Set(viewedStories));
+  const [selectedStoryId, setSelectedStoryId] = useState<string | null>(null);
 
   const groupedStories = useMemo(() => {
     const groups = new Map<string, StoryInterface>();
@@ -92,7 +93,10 @@ const RenderStoriesUsers = () => {
               storyId={story.stories[0]?.id}
               hasStory={story.stories.length > 0}
               storyCount={story.stories.length}
-              onPress={() => setSelectedStory(story)}
+              onPress={() => {
+                setSelectedStory(story);
+                setSelectedStoryId(story.stories[0]?.id);
+              }}
             />
           )
         })}
@@ -103,7 +107,9 @@ const RenderStoriesUsers = () => {
           visible={!!selectedStory}
           story={selectedStory}
           userId={userId!}
+          storyId={selectedStoryId!}
           user_id={selectedStory.user_id}
+          refetch={refetch}
           onClose={() => {
             setSelectedStory(null)
             setCurrentStoryIndex(0)

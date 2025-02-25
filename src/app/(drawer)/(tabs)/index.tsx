@@ -1,6 +1,6 @@
 import { useUser } from "@clerk/clerk-expo"
 import { useEffect } from "react"
-import { ActivityIndicator, Alert, AppState, View } from "react-native"
+import { ActivityIndicator, Alert, AppState, TouchableOpacity, View } from "react-native"
 
 import { requestNotificationPermission, useRegisterPushToken } from "@/components/GetTokensNotifications"
 import ContactsScreen from "@/components/conatcts/ListContacts"
@@ -9,6 +9,8 @@ import { useTheme } from "@/hooks/useTheme"
 import { updateUserOnlineStatus } from "@/utils/userStatus"
 
 import RenderStoriesUsers from "@/components/storys/Render-Stories"
+import { FontAwesome } from "@expo/vector-icons"
+import { router } from "expo-router"
 import { stylesHome } from "../../styles/stylesHome"
 
 export default function TabOneScreen() {
@@ -40,6 +42,9 @@ export default function TabOneScreen() {
     return () => subscription.remove()
   }, [user])
 
+  const handleStories = () => {
+    router.navigate("/(pages)/newsStories/AddStories")
+  }
 
   if (!isLoaded) {
     return (
@@ -54,6 +59,11 @@ export default function TabOneScreen() {
       <RenderStoriesUsers />
       <MenssagensList />
       <ContactsScreen />
+      <View style={stylesHome.containerButtonStories}>
+        <TouchableOpacity style={stylesHome.buttonStories} onPress={handleStories}>
+          <FontAwesome name="camera" size={24} color={colors.text} />
+        </TouchableOpacity>
+      </View>
     </View>
   )
 }
